@@ -4,10 +4,10 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div>
-      <main>
-        <p className="text-2xl text-red-400">test</p>
+      <main className="bg-primary">
+        <p className="text-2xl text-primary">test</p>
       </main>
-      <Button variant="default">
+      <Button >
         hey
       </Button>
       <footer></footer>
