@@ -13,9 +13,8 @@
     --tracking-wide: calc(var(--tracking-normal) + 0.025em);
     --tracking-wider: calc(var(--tracking-normal) + 0.05em);
     --tracking-widest: calc(var(--tracking-normal) + 0.1em)}
-
-    :root {
-  --background: 204.00 12.20% 91.96%;
+:root {
+  --background: 0 0% 100%;
   --foreground: 0 0% 20%;
   --card: 0 0% 100%;
   --card-foreground: 0 0% 20%;
@@ -107,6 +106,7 @@
   --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.25);
 }
+
  body {
     letter-spacing: var(--tracking-normal);
   }

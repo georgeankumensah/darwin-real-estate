@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <div>
-      <main className="bg-primary">
-        <p className="text-2xl text-primary">test</p>
+      <main>
+        <p>test</p>
       </main>
-      <Button >
-        hey
-      </Button>
+      <Link href="/dashboard">Got to dashboard</Link>
       <footer></footer>
     </div>
   );
