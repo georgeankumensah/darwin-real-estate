@@ -1,11 +1,23 @@
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function NewPropertyPage() {
   return (
@@ -22,7 +34,9 @@ export default function NewPropertyPage() {
       <Card>
         <CardHeader>
           <CardTitle>Property Information</CardTitle>
-          <CardDescription>Enter the details of the new property listing.</CardDescription>
+          <CardDescription>
+            Enter the details of the new property listing.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-6">
@@ -66,11 +80,19 @@ export default function NewPropertyPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bedrooms">Bedrooms</Label>
-                <Input id="bedrooms" type="number" placeholder="Number of bedrooms" />
+                <Input
+                  id="bedrooms"
+                  type="number"
+                  placeholder="Number of bedrooms"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bathrooms">Bathrooms</Label>
-                <Input id="bathrooms" type="number" placeholder="Number of bathrooms" />
+                <Input
+                  id="bathrooms"
+                  type="number"
+                  placeholder="Number of bathrooms"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="area">Area (sq ft)</Label>
@@ -89,7 +111,11 @@ export default function NewPropertyPage() {
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Enter property description" rows={5} />
+              <Textarea
+                id="description"
+                placeholder="Enter property description"
+                rows={5}
+              />
             </div>
 
             <div className="space-y-2">
@@ -98,7 +124,9 @@ export default function NewPropertyPage() {
                 <div className="mx-auto flex flex-col items-center justify-center gap-1">
                   <div className="text-muted-foreground">
                     <p>Drag and drop your images here or click to browse</p>
-                    <p className="text-xs">Supported formats: JPEG, PNG, WebP</p>
+                    <p className="text-xs">
+                      Supported formats: JPEG, PNG, WebP
+                    </p>
                   </div>
                   <Input id="images" type="file" multiple className="hidden" />
                   <Button variant="outline" size="sm" className="mt-2">
@@ -118,5 +146,5 @@ export default function NewPropertyPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

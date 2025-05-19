@@ -8,8 +8,8 @@ import {
   Users,
   CreditCard,
   UserCircle,
-  Bell,
-  MessageSquare,
+  // Bell,
+  // MessageSquare,
 } from "lucide-react";
 
 import {
@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+
+
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -39,8 +41,8 @@ export function DashboardSidebar() {
       icon: Building,
     },
     {
-      title: "Customers",
-      href: "/customers",
+      title: "Tenants",
+      href: "/tenants",
       icon: Users,
     },
     {
@@ -49,21 +51,21 @@ export function DashboardSidebar() {
       icon: CreditCard,
     },
     {
-      title: "Agents",
-      href: "/agents",
+      title: "Owners",
+      href: "/owners",
       icon: UserCircle,
     },
-    {
-      title: "Notifications",
-      href: "/notifications",
-      icon: Bell,
-      badge: 2,
-    },
-    {
-      title: "Chat",
-      href: "/chat",
-      icon: MessageSquare,
-    },
+    // {
+    //   title: "Notifications",
+    //   href: "/notifications",
+    //   icon: Bell,
+    //   badge: 2,
+    // },
+    // {
+    //   title: "Chat",
+    //   href: "/chat",
+    //   icon: MessageSquare,
+    // },
   ];
 
   return (
@@ -80,7 +82,7 @@ export function DashboardSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
+                isActive={pathname.startsWith(item.href)}
                 className={`relative flex h-10 w-full items-center gap-3 rounded-[30px] px-3 ${
                   pathname === item.href
                     ? "bg-primary dark:bg-primary/20 text-white font-medium"
@@ -90,14 +92,14 @@ export function DashboardSidebar() {
                 <Link href={item.href}>
                   <item.icon className="h-4 w-4" />
                   <span>{item.title}</span>
-                  {item.badge && (
+                  {/* {item.badge && (
                     <Badge
                       variant="secondary"
                       className="ml-auto h-6 w-6 aspect-square rounded-full bg-green-500 hover:bg-green-500 text-[10px] text-white text-center"
                     >
                       {item.badge}
                     </Badge>
-                  )}
+                  )} */}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
