@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { MapPin, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,8 @@ const properties = [
     id: 1,
     title: "Modern",
     image: "/placeholder.png?height=400&width=600",
+    address: "123 Luxury Lane, Beverly Hills, CA 90210",
+    price: "$2,450,000",
     description:
       "Sleek design with open floor plans, clean lines, and minimalist aesthetics for urban living.",
     agents: [
@@ -22,6 +24,9 @@ const properties = [
     id: 2,
     title: "Scandinavian",
     image: "/placeholder2.png?height=400&width=600",
+    address: "123 Luxury Lane, Beverly Hills, CA 90210",
+    price: "$2,450,000",
+
     description:
       "Natural materials, neutral colors, and functional design creating warm and inviting spaces.",
     agents: [
@@ -35,6 +40,8 @@ const properties = [
     id: 3,
     title: "Minimalist",
     image: "/placeholder3.png?height=400&width=600",
+    address: "123 Luxury Lane, Beverly Hills, CA 90210",
+    price: "$2,450,000",
     description:
       "Different properties have different styles, and various types of amenities to suit every need.",
     agents: [
@@ -48,17 +55,29 @@ const properties = [
 
 export default function PropertiesPage() {
   return (
-    <div className="p-6 space-y-4">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Properties</h1>
-        <p className="text-muted-foreground">Luxury homes and apartments</p>
+    <div className="p-6 space-y-4 ">
+      <div className=" flex items-center justify-between space-y-1 w-full  border-b pb-4 ">
+        <div>
+          <h1 className="text-2xl font-medium">Properties</h1>
+          <p className="text-muted-foreground text-sm">
+            Luxury homes and apartments
+          </p>
+        </div>
+        <Link
+          href="/properties/new"
+          className="flex items-center gap-2 bg-primary text-sm rounded-[6px] text-white px-4 py-2  hover:bg-primary/90 transition-colors"
+        >
+          <Plus className="h-6 w-6 text-white" />
+          <span>Add Property</span>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
         {properties.map((property) => (
-          <div
+          <Link
+            href={`/properties/${property.id}`}
             key={property.id}
-            className="group flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md"
+            className="group flex flex-col overflow-hidden  border bg-card shadow-sm transition-all hover:shadow-md"
           >
             <div className="aspect-[4/3] relative overflow-hidden">
               <img
@@ -72,46 +91,28 @@ export default function PropertiesPage() {
                 <div className="text-xs text-muted-foreground">
                   Property #{property.id}
                 </div>
-                <h3 className="font-medium text-lg">{property.title}</h3>
+                <div className="flex items-center justify-between ">
+                  <h3 className="font-medium text-lg">{property.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {property.price}
+                  </p>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <span className="text-xs">{property.address}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
                 <p className="text-sm text-muted-foreground line-clamp-3">
                   {property.description}
                 </p>
               </div>
-
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <Link
-                  href={`/properties/${property.id}`}
-                  className="text-xs rounded-full px-4"
-                >
-                  <Button variant="outline" size="sm" className="text-xs rounded-full px-4">
-                  VIEW ALL
-                  </Button>
-                </Link>
-                <div className="flex -space-x-2">
-                  {property.agents.map((agent, index) => (
-                    <Avatar
-                      key={index}
-                      className="h-6 w-6 border-2 border-background"
-                    >
-                      <AvatarImage
-                        src={agent.image || "/placeholder.svg"}
-                        alt={agent.name}
-                      />
-                      <AvatarFallback className="text-[10px]">
-                        {agent.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                </div>
-              </div>
             </div>
-          </div>
+          </Link>
         ))}
 
-        <Link
+        {/* <Link
           href="/properties/new"
           className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-background p-6 text-center hover:border-primary hover:bg-muted transition-colors h-full min-h-[300px]"
         >
@@ -119,7 +120,7 @@ export default function PropertiesPage() {
             <Plus className="h-6 w-6 text-muted-foreground" />
           </div>
           <h3 className="mt-4 text-lg font-medium">Create a New Property</h3>
-        </Link>
+        </Link> */}
       </div>
     </div>
   );

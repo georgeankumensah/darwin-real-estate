@@ -19,10 +19,10 @@ export default function RootLayout({
           <div className="flex min-h-screen">
             <DashboardSidebar />
             <SidebarInset className="flex-1">
-              <main className="flex-1">{children}</main>
+              <main className="flex-1 ">{children}</main>
             </SidebarInset>
           </div>
         </SidebarProvider>
-    </div>
+    </div> 
   );
 }

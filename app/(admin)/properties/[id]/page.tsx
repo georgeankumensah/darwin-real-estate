@@ -62,8 +62,8 @@ export default function PropertyDetailPage({
   };
 
   return (
-    <div className="p-6 space-y-6 w-full">
-      <div className="flex  items-center justify-between">
+    <div className="p-6 space-y-6 overflow-y-scroll h-screen  ">
+      <div className="flex  items-center justify-between w-full border-b pb-4 shrink-0">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" asChild>
             <Link href="/properties">
@@ -87,8 +87,7 @@ export default function PropertyDetailPage({
         <ImageCarousel showThumbnails showPagination={false} />
       </div>
 
-      <div className="">
-        <div className=" space-y-6 max-w-[800px]">
+        <div className=" space-y-6 ">
           <div className="flex items-center justify-between max-w-[800px]">
             <div>
               <h1 className="text-2xl font-semibold">{property.title}</h1>
@@ -128,9 +127,8 @@ export default function PropertyDetailPage({
           </div>
         
           <h2 className="text-xl font-medium mb-2">Description</h2>
-          <p className="text-muted-foreground ">{property.description}</p>
+          <p className="text-muted-foreground text-wrap max-w-[800px]">{property.description}</p>
         </div>
-      </div>
     </div>
   );
 }

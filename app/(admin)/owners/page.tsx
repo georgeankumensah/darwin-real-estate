@@ -1,11 +1,11 @@
-import React from 'react'
+import { Suspense } from "react"
+import OwnersClientPage from "./client-page"
 
-const page = () => {
+export default function OwnersPage() {
   return (
-    <div>
-      agents
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <OwnersClientPage />
+    </Suspense>
   )
 }
-
-export default page
+  

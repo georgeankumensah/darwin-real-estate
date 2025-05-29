@@ -23,8 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-
-
+import { cn } from "@/lib/utils";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -33,27 +32,27 @@ export function DashboardSidebar() {
     {
       title: "Dashboard",
       href: "/dashboard",
-      icon: LayoutDashboard,
+      icon: "/home.svg",
     },
     {
       title: "Properties",
       href: "/properties",
-      icon: Building,
+      icon: "/properties.svg",
     },
     {
       title: "Tenants",
       href: "/tenants",
-      icon: Users,
+      icon: "/tenants.svg",
     },
     {
       title: "Transactions",
       href: "/transactions",
-      icon: CreditCard,
+      icon: "/transactions.svg",
     },
     {
       title: "Owners",
       href: "/owners",
-      icon: UserCircle,
+      icon: "/owner.svg",
     },
     // {
     //   title: "Notifications",
@@ -69,58 +68,58 @@ export function DashboardSidebar() {
   ];
 
   return (
-    <Sidebar className="border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3">
-      <SidebarHeader className="px-2 py-4">
-        <Link href="/dashboard" className="flex items-center gap-2 px-4">
-         
-          <span className="font-semibold tracking-tight">Admin</span>
-        </Link>
-      </SidebarHeader>
-      <SidebarContent className="px-2 mt-[30px]">
-        <SidebarMenu className=" gap-y-[15px]">
-          {navigation.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith(item.href)}
-                className={`relative flex h-10 w-full items-center gap-3 rounded-[30px] px-3 ${
-                  pathname === item.href
-                    ? "bg-primary dark:bg-primary/20 text-white font-medium"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <Link href={item.href}>
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.title}</span>
-                  {/* {item.badge && (
-                    <Badge
-                      variant="secondary"
-                      className="ml-auto h-6 w-6 aspect-square rounded-full bg-green-500 hover:bg-green-500 text-[10px] text-white text-center"
-                    >
-                      {item.badge}
-                    </Badge>
-                  )} */}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarFooter className="mt-auto border-t p-4">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Avatar className="h-12 w-12 border-2 border-muted">
-            <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">Alex Morgan</span>
-            <span className="text-xs text-muted-foreground">
-              morgan@realestate.com
-            </span>
-          </div>
-          <div className="absolute -right-1 bottom-1 h-2.5 w-2.5 rounded-full bg-green-500 ring-1 ring-white" />
+    <aside className="w-full max-w-[300px] h-screen border-r flex flex-col  bg-[#435468] p-[18px] pt-[30px]">
+      <div className="flex items-center justify-start gap-2">
+        <img
+          src="/darwin.png"
+          alt="Darwin"
+          className="w-[50px] aspect-square rounded-[6px]  "
+        />
+        <div className="flex flex-col">
+          <span className="text-white text-[16px] font-semibold">Darwin</span>
+          <span className="text-[#90b6e1] text-[12px]">
+            Property Management
+          </span>
         </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+      <div className="flex flex-col  gap-y-[10px] mt-[40px]">
+        {navigation.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex items-center gap-2 p-4 text-[#98C0EE] rounded-[6px] hover:bg-[#536a85]  text-[14px] transition-colors",
+              pathname.startsWith(item.href) ? "bg-[#4C6077]  text-white" : ""
+            )}
+          >
+            <img
+              src={item.icon}
+              alt={item.title}
+              className={cn(
+                "h-[25] aspect-auto mix-blend-overlay ",
+                pathname.startsWith(item.href) ? "mix-blend-normal " : ""
+              )}
+            />
+            <span>{item.title}</span>
+          </Link>
+        ))}
+      </div>
+      <div className="flex flex-col bg-[#4C6077] p-4 rounded-[6px] mt-auto">
+        <div className="flex items-center gap-3">
+          <img
+            src="/owner.svg"
+            alt="admin"
+            className="w-[50px] aspect-square bg-[#98C0EE] p-[10px] rounded-[6px] "
+          />
+          <div className="flex flex-col">
+            <span className="text-white text-[16px] font-[400]">Admin</span>
+            <span className="text-[#90b6e1] text-[12px]">Administrator</span>
+          </div>
+        </div>
+        <button className="bg-red-500 text-white text-[14px] px-4 py-2 rounded-[6px] mt-4 hover:bg-red-600 transition-colors">
+          Log Out
+        </button>
+      </div>
+    </aside>
   );
 }

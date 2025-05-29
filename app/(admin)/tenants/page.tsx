@@ -1,11 +1,10 @@
-import React from 'react'
+import { Suspense } from "react"
+import CustomersClientPage from "./client-page"
 
-const page = () => {
+export default function CustomersPage() {
   return (
-    <div>
-      customers
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <CustomersClientPage />
+    </Suspense>
   )
 }
-
-export default page
