@@ -38,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import TenantsTable from "@/components/tables/Tenants";
+import TenantsTable from "@/components/ui/tables/Tenants";
 
 // Sample tenant data based on the User model
 const allTenants = [
