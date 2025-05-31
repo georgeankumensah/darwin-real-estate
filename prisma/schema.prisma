@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String?        @unique
+  firstName      String
+  lastName       String
+  phoneNumber    String
+  altPhoneNumber String?
+  location       String?
+  type           UserType
+  profileImage   String?
+  password       String?
+  status         UserStatus     @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  properties     Properties[]
+  UserProperty   UserProperty[]
+}
+
+model Properties {
+  id             String          @id @default(cuid())
+  title          String
+  images         String[]
+  description    String
+  propertyType   String
+  currency       String
+  price          Float
+  bedrooms       Int
+  bathrooms      Int
+  area           Int
+  yearBuilt      Int
+  address        String
+  features       String[]
+  status         PropertyStatus? @default(FOR_SALE)
+  userId         String?
+  createdAt      DateTime        @default(now())
+  User           User?           @relation(fields: [userId], references: [id])
+  userProperties UserProperty[]
+}
+
+model UserProperty {
+  userId     String
+  propertyId String
+  role       UserType
+  startDate  DateTime?
+  endDate    DateTime?
+  status     PropertyUserStatus @default(PENDING)
+  notes      String?
+  property   Properties         @relation(fields: [propertyId], references: [id])
+  user       User               @relation(fields: [userId], references: [id])
+
+  @@id([userId, propertyId])
+}
+
+enum PropertyStatus {
+  FOR_SALE
+  FOR_RENT
+  SOLD
+  RENTED
+}
+
+enum UserType {
+  TENANT
+  OWNER
+  ADMIN
+}
+
+enum PropertyUserStatus {
+  PENDING
+  ACTIVE
+  TERMINATED
+  REJECTED
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+  DELETED
+}
