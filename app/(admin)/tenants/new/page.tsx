@@ -1,3 +1,5 @@
+"use client"
+
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -5,8 +7,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {useRouter} from "next/navigation";
+import {useState} from "react";
+import { useCreateTenant } from "@/hooks/api/tenants/useCreateTenant"
 
 export default function NewTenantPage() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    phoneNumber2: '',
+    location: '',
+    image: null as File | null
+  })
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const {mutate: createTenant} = useCreateTenant()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const submitData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      phoneNumber2: formData.phoneNumber2 || undefined,
+      location: formData.location,
+    }
+
+    createTenant(submitData)
+    router.push('/tenants')
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
@@ -24,31 +65,66 @@ export default function NewTenantPage() {
           <CardDescription>Enter the details of the new tenant.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="Enter first name" />
+                <Input
+                    id="firstName"
+                    placeholder="Enter first name"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Enter last name" />
+                <Input
+                    id="lastName"
+                    placeholder="Enter last name"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter email address" />
+                <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter email address"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input id="phoneNumber" placeholder="Enter phone number" />
+                <Input
+                    id="phoneNumber"
+                    placeholder="Enter phone number"
+                    value={formData.phoneNumber}
+                    onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                    required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber2">Alternative Phone (Optional)</Label>
-                <Input id="phoneNumber2" placeholder="Enter alternative phone" />
+                <Input
+                    id="phoneNumber2"
+                    placeholder="Enter alternative phone"
+                    value={formData.phoneNumber2}
+                    onChange={(e) => handleInputChange('phoneNumber2', e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="location">Location</Label>
-                <Input id="location" placeholder="Enter location" />
+                <Input
+                    id="location"
+                    placeholder="Enter location"
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>

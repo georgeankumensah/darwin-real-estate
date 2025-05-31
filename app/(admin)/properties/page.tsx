@@ -1,59 +1,64 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin, Plus } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-
-// Sample property data
-const properties = [
-  {
-    id: 1,
-    title: "Modern",
-    image: "/placeholder.png?height=400&width=600",
-    address: "123 Luxury Lane, Beverly Hills, CA 90210",
-    price: "$2,450,000",
-    description:
-      "Sleek design with open floor plans, clean lines, and minimalist aesthetics for urban living.",
-    agents: [
-      { name: "Alex M", image: "/placeholder.svg?height=40&width=40" },
-      { name: "Sarah L", image: "/placeholder.svg?height=40&width=40" },
-      { name: "John D", image: "/placeholder.svg?height=40&width=40" },
-      { name: "Emma W", image: "/placeholder.svg?height=40&width=40" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Scandinavian",
-    image: "/placeholder2.png?height=400&width=600",
-    address: "123 Luxury Lane, Beverly Hills, CA 90210",
-    price: "$2,450,000",
-
-    description:
-      "Natural materials, neutral colors, and functional design creating warm and inviting spaces.",
-    agents: [
-      { name: "Lisa T", image: "/placeholder.svg?height=40&width=40" },
-      { name: "Mark R", image: "/placeholder.svg?height=40&width=40" },
-      { name: "Kate P", image: "/placeholder.svg?height=40&width=40" },
-      { name: "David S", image: "/placeholder.svg?height=40&width=40" },
-    ],
-  },
-  {
-    id: 3,
-    title: "Minimalist",
-    image: "/placeholder3.png?height=400&width=600",
-    address: "123 Luxury Lane, Beverly Hills, CA 90210",
-    price: "$2,450,000",
-    description:
-      "Different properties have different styles, and various types of amenities to suit every need.",
-    agents: [
-      { name: "Ryan K", image: "/placeholder.svg?height=40&width=40" },
-      { name: "Olivia J", image: "/placeholder.svg?height=40&width=40" },
-      { name: "Noah C", image: "/placeholder.svg?height=40&width=40" },
-      { name: "Sophia B", image: "/placeholder.svg?height=40&width=40" },
-    ],
-  },
-];
+import {useAllProperties} from "@/hooks/api/properties/useAllProperties";
+//
+// // Sample property data
+// const properties = [
+//   {
+//     id: 1,
+//     title: "Modern",
+//     image: "/placeholder.png?height=400&width=600",
+//     address: "123 Luxury Lane, Beverly Hills, CA 90210",
+//     price: "$2,450,000",
+//     description:
+//       "Sleek design with open floor plans, clean lines, and minimalist aesthetics for urban living.",
+//     agents: [
+//       { name: "Alex M", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "Sarah L", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "John D", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "Emma W", image: "/placeholder.svg?height=40&width=40" },
+//     ],
+//   },
+//   {
+//     id: 2,
+//     title: "Scandinavian",
+//     image: "/placeholder2.png?height=400&width=600",
+//     address: "123 Luxury Lane, Beverly Hills, CA 90210",
+//     price: "$2,450,000",
+//
+//     description:
+//       "Natural materials, neutral colors, and functional design creating warm and inviting spaces.",
+//     agents: [
+//       { name: "Lisa T", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "Mark R", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "Kate P", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "David S", image: "/placeholder.svg?height=40&width=40" },
+//     ],
+//   },
+//   {
+//     id: 3,
+//     title: "Minimalist",
+//     image: "/placeholder3.png?height=400&width=600",
+//     address: "123 Luxury Lane, Beverly Hills, CA 90210",
+//     price: "$2,450,000",
+//     description:
+//       "Different properties have different styles, and various types of amenities to suit every need.",
+//     agents: [
+//       { name: "Ryan K", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "Olivia J", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "Noah C", image: "/placeholder.svg?height=40&width=40" },
+//       { name: "Sophia B", image: "/placeholder.svg?height=40&width=40" },
+//     ],
+//   },
+// ];
 
 export default function PropertiesPage() {
+  const { data, isLoading, isError } = useAllProperties();
+
+  const properties = data?.properties || [];
+
   return (
     <div className="p-6 space-y-4 ">
       <div className=" flex items-center justify-between space-y-1 w-full  border-b pb-4 ">
