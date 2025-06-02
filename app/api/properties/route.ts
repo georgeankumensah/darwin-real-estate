@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
             id: true,
             title: true,
             images: true,
+            propertyType: true,
+            status: true,
             address: true,
             currency: true,
             price: true,
@@ -41,20 +43,9 @@ export async function GET(request: NextRequest) {
         },
     });
 
-    // Map to Property type and pick the first image
-    const result = properties.map((prop) => ({
-        id: prop.id,
-        title: prop.title,
-        image: prop.images?.[0] || "", // Fallback to empty string if no image
-        address: prop.address,
-        currency: prop.currency,
-        price: prop.price.toString(),
-        description: prop.description,
-    }));
-
     return new Response(
         JSON.stringify({
-            properties: result,
+            properties,
             pagination: {
                 total,
                 page,
