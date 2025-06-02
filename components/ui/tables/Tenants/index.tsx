@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import {
   Table,
   TableBody,
@@ -223,90 +224,94 @@ export default function TenantsTable() {
             </div>
         )}
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tenant</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Properties</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTenants.length > 0 ? (
-                  filteredTenants.map((tenant) => (
-                      <TableRow key={tenant.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage
-                                  src={tenant.image || "/placeholder.svg"}
-                                  alt={`${tenant.firstName} ${tenant.lastName}`}
-                              />
-                              <AvatarFallback>
-                                {tenant.firstName[0]}
-                                {tenant.lastName[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">
-                                {tenant.firstName} {tenant.lastName}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                {tenant.email}
+        {isLoading ? (
+          <LoadingIndicator text="Loading tenants..." />
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tenant</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Properties</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTenants.length > 0 ? (
+                    filteredTenants.map((tenant) => (
+                        <TableRow key={tenant.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarImage
+                                    src={tenant.image || "/placeholder.svg"}
+                                    alt={`${tenant.firstName} ${tenant.lastName}`}
+                                />
+                                <AvatarFallback>
+                                  {tenant.firstName[0]}
+                                  {tenant.lastName[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">
+                                  {tenant.firstName} {tenant.lastName}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {tenant.email}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{tenant.location || "—"}</TableCell>
-                        <TableCell>{tenant.phoneNumber}</TableCell>
-                        <TableCell>
-                          {tenant.properties > 0 ? (
-                              <Badge variant="outline">{tenant.properties}</Badge>
-                          ) : (
-                              <span className="text-muted-foreground">None</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(tenant.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                Actions
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/tenants/${tenant.id}`}>
-                                  View Details
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>Edit Tenant</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                Delete Tenant
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                  ))
-              ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      No tenants found matching your filters.
-                    </TableCell>
-                  </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                          </TableCell>
+                          <TableCell>{tenant.location || "—"}</TableCell>
+                          <TableCell>{tenant.phoneNumber}</TableCell>
+                          <TableCell>
+                            {tenant.properties > 0 ? (
+                                <Badge variant="outline">{tenant.properties}</Badge>
+                            ) : (
+                                <span className="text-muted-foreground">None</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(tenant.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  Actions
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/tenants/${tenant.id}`}>
+                                    View Details
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>Edit Tenant</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive">
+                                  Delete Tenant
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                    ))
+                ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center">
+                        No tenants found matching your filters.
+                      </TableCell>
+                    </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
       </div>
   );

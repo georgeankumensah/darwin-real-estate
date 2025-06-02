@@ -9,6 +9,7 @@ import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
+import {LoadingIndicator} from "@/components/ui/loading-indicator"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {
     DropdownMenu,
@@ -302,87 +303,91 @@ export default function OwnersClientPage() {
                         </div>
                     )}
 
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Owner</TableHead>
-                                    <TableHead>Location</TableHead>
-                                    <TableHead>Properties</TableHead>
-                                    <TableHead>Sales</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredOwners.length > 0 ? (
-                                    filteredOwners.map((owner) => (
-                                        <TableRow key={owner.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar>
-                                                        <AvatarImage
-                                                            src={owner.image || "/placeholder.svg"}
-                                                            alt={`${owner.firstName} ${owner.lastName}`}
-                                                        />
-                                                        <AvatarFallback>
-                                                            {owner.firstName[0]}
-                                                            {owner.lastName[0]}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <div className="font-medium">
-                                                            {owner.firstName} {owner.lastName}
+                    {isLoading ? (
+                        <LoadingIndicator text="Loading owners..." />
+                    ) : (
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Owner</TableHead>
+                                        <TableHead>Location</TableHead>
+                                        <TableHead>Properties</TableHead>
+                                        <TableHead>Sales</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredOwners.length > 0 ? (
+                                        filteredOwners.map((owner) => (
+                                            <TableRow key={owner.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar>
+                                                            <AvatarImage
+                                                                src={owner.image || "/placeholder.svg"}
+                                                                alt={`${owner.firstName} ${owner.lastName}`}
+                                                            />
+                                                            <AvatarFallback>
+                                                                {owner.firstName[0]}
+                                                                {owner.lastName[0]}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <div className="font-medium">
+                                                                {owner.firstName} {owner.lastName}
+                                                            </div>
+                                                            <div
+                                                                className="text-sm text-muted-foreground">{owner.email}</div>
                                                         </div>
-                                                        <div
-                                                            className="text-sm text-muted-foreground">{owner.email}</div>
                                                     </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{owner.location}</TableCell>
-                                            <TableCell>
-                                              <Badge variant="outline">{owner.properties}</Badge>
-                                            </TableCell>
-                                            <TableCell>{owner.sales}</TableCell>
-                                            <TableCell>
-                                              <Badge
-                                                  variant={owner.status === "Active" ? "default" : "secondary"}
-                                                  className={owner.status === "Active" ? "bg-green-500" : ""}
-                                              >
-                                                {owner.status}
-                                              </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm">
-                                                            Actions
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={`/owners/${owner.id}`}>View Details</Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem>Edit Owner</DropdownMenuItem>
-                                                        <DropdownMenuSeparator/>
-                                                        <DropdownMenuItem className="text-destructive">Deactivate
-                                                            Owner</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                </TableCell>
+                                                <TableCell>{owner.location}</TableCell>
+                                                <TableCell>
+                                                  <Badge variant="outline">{owner.properties}</Badge>
+                                                </TableCell>
+                                                <TableCell>{owner.sales}</TableCell>
+                                                <TableCell>
+                                                  <Badge
+                                                      variant={owner.status === "Active" ? "default" : "secondary"}
+                                                      className={owner.status === "Active" ? "bg-green-500" : ""}
+                                                  >
+                                                    {owner.status}
+                                                  </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm">
+                                                                Actions
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/owners/${owner.id}`}>View Details</Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem>Edit Owner</DropdownMenuItem>
+                                                            <DropdownMenuSeparator/>
+                                                            <DropdownMenuItem className="text-destructive">Deactivate
+                                                                Owner</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="h-24 text-center">
+                                                No owners found matching your filters.
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center">
-                                            No owners found matching your filters.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
