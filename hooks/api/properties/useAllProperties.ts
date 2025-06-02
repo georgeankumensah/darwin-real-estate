@@ -3,8 +3,10 @@ import {useQuery} from "@tanstack/react-query";
 
 export type Property = {
     id: string;
+    propertyType: string;
+    status: string;
     title: string;
-    image: string;
+    images: string[];
     address: string;
     currency: string;
     price: string;
