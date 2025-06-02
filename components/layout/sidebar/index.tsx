@@ -49,7 +49,7 @@ export function DashboardSidebar() {
     ];
 
     return (
-        <aside className="w-full max-w-[300px] h-screen border-r flex flex-col  bg-[#435468] p-[18px] pt-[30px]">
+        <aside className="w-full max-w-[300px] h-screen border-r flex flex-col shrink-0  bg-[#435468] p-[18px] pt-[30px]">
             <div className="flex items-center justify-start gap-2">
                 <img
                     src="/darwin.png"

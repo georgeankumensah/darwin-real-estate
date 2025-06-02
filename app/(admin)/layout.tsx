@@ -15,10 +15,10 @@ export default function RootLayout({
   return (
     <div>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen">
+        <div className="flex h-screen w-full ">
           <DashboardSidebar />
           <SidebarInset className="flex-1">
-            <main className="flex-1 ">{children}</main>
+            <main className="flex-1 w-full">{children}</main>
           </SidebarInset>
         </div>
       </SidebarProvider>
