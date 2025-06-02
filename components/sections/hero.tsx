@@ -7,8 +7,8 @@ const Hero = () => {
         <div className="relative isolate">
           <div className="overflow-hidden">
             <div className="mx-auto max-w-7xl px-6 pb-32 pt-36 sm:pt-60 lg:px-8 lg:pt-32 ">
-              <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
-                <div className="relative w-full ">
+              <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center  ">
+                <div className="relative w-full">
                   <h1 className="text-4xl table sm:text-7xl w-[600px] text-balance font-display tracking-tight text-5xl sm:text-5xl text-primary-0">
                     Let's get you a place to
                     <span className="text-[#435468] ml-2">Stay</span>
@@ -50,7 +50,7 @@ const Hero = () => {
                       </button>
                     </div>
 
-                    <button className="flex items-stretch  border-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 text-primary-300 px-2 py-2 min-h-14 text-sm md:text-base rounded-lg">
+                    {/* <button className="flex items-stretch  border-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 text-primary-300 px-2 py-2 min-h-14 text-sm md:text-base rounded-lg">
                       <div className="flex items-center gap-x-2 flex-1 text-center justify-center px-3">
                         Browse Properties
                       </div>
@@ -69,9 +69,10 @@ const Hero = () => {
                           />
                         </svg>
                       </div>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
+                <img src="/hero.png" alt="" className="h-full absolute right-0 top-0" />
               </div>
             </div>
           </div>
