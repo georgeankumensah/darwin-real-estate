@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import TransactionsClientPage from "./client-page";
 
 const page = () => {
   return (
@@ -20,6 +21,7 @@ const page = () => {
           <span>Add Transaction</span>
         </Link>
       </div>
+      <TransactionsClientPage/>
     </div>
   );
 };

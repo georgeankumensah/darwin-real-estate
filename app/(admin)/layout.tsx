@@ -18,7 +18,7 @@ export default function RootLayout({
         <div className="flex h-screen w-full ">
           <DashboardSidebar />
           <SidebarInset className="flex-1">
-            <main className="flex-1 w-full">{children}</main>
+            <main className="flex-1 w-full max-h-screen overflow-scroll">{children}</main>
           </SidebarInset>
         </div>
       </SidebarProvider>
