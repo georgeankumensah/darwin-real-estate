@@ -10,7 +10,7 @@ const Login = () => {
 
       <div className="mx-auto max-w-md px-6 py-24 sm:py-32 lg:py-40">
         <h2 className=" font-display tracking-tight text-5xl sm:text-5xl text-primary-0 ">
-          Howdy, Admin!
+          Howdy, <span className="text-[#435468]">Admin</span>!
         </h2>
         <p className="mt-4 font-body  leading-8 text-md md:text-xl text-primary-300">
           Log in to continue exploring your dashboard.
@@ -84,7 +84,7 @@ const Login = () => {
           </p>
         </form>
       </div>
-      <div className=" bg-black h-[200px] w-full fixed z-10 bottom-0 [mask-image:url('https://assets.jijistatic.net/static/svg/footer/footer-ghana-new.svg');] [mask-repeat:no-repeat] [mask-size:contain] [mask-position:bottom]"/>
+      <div className=" bg-[#435468] h-[200px] w-full fixed z-10 bottom-0 [mask-image:url('/footer-ghana-new.svg');] [mask-repeat:no-repeat] [mask-size:contain] [mask-position:bottom]"/>
     </section>
   );
 };
