@@ -9,8 +9,8 @@ datasource db {
 }
 
 model User {
-  id             String         @id @default(cuid())
-  email          String?        @unique
+  id             String     @id @default(cuid())
+  email          String     @unique
   firstName      String
   lastName       String
   phoneNumber    String
@@ -19,45 +19,100 @@ model User {
   type           UserType
   profileImage   String?
   password       String?
-  status         UserStatus     @default(ACTIVE)
-  createdAt      DateTime       @default(now())
-  properties     Properties[]
-  UserProperty   UserProperty[]
+  status         UserStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  deletedAt      DateTime?
+
+  ownedProperties Property[] @relation("OwnerRelation")
 }
 
-model Properties {
-  id             String          @id @default(cuid())
-  title          String
-  images         String[]
-  description    String
-  propertyType   String
-  currency       String
-  price          Float
-  bedrooms       Int
-  bathrooms      Int
-  area           Int
-  yearBuilt      Int
-  address        String
-  features       String[]
-  status         PropertyStatus? @default(FOR_SALE)
-  userId         String?
-  createdAt      DateTime        @default(now())
-  User           User?           @relation(fields: [userId], references: [id])
-  userProperties UserProperty[]
+model Property {
+  id           String         @id @default(cuid())
+  title        String
+  description  String
+  propertyType String
+  currency     String
+  price        Float
+  bedrooms     Int
+  bathrooms    Int
+  area         Int
+  yearBuilt    Int
+  address      String
+  features     String[]
+  status       PropertyStatus @default(FOR_SALE)
+  ownerId      String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+
+  owner        User?         @relation("OwnerRelation", fields: [ownerId], references: [id])
+  tenants      Customer[]
+  transactions Transaction[]
+  media        Media[]       @relation("PropertyMedia")
+
+  @@index([status])
+  @@index([ownerId])
 }
 
-model UserProperty {
-  userId     String
+model Media {
+  id         String   @id @default(cuid())
+  url        String
+  publicId   String
+  type       String // 'image' or 'video'
   propertyId String
-  role       UserType
-  startDate  DateTime?
-  endDate    DateTime?
-  status     PropertyUserStatus @default(PENDING)
-  notes      String?
-  property   Properties         @relation(fields: [propertyId], references: [id])
-  user       User               @relation(fields: [userId], references: [id])
+  property   Property @relation("PropertyMedia", fields: [propertyId], references: [id])
+  createdAt  DateTime @default(now())
+}
 
-  @@id([userId, propertyId])
+model Customer {
+  id          String             @id @default(cuid())
+  firstName   String
+  lastName    String
+  phoneNumber String
+  email       String?
+  roomNumber  String?
+  floorNumber String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      PropertyUserStatus
+  propertyId  String
+  property    Property           @relation(fields: [propertyId], references: [id])
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  deletedAt   DateTime?
+}
+
+model Transaction {
+  id              String            @id @default(cuid())
+  transactionType TransactionType
+  currency        String
+  amount          Float
+  transactionDate DateTime
+  status          TransactionStatus
+  refNumber       String            @unique
+  description     String?
+  propertyId      String
+  property        Property          @relation(fields: [propertyId], references: [id])
+  paymentMethod   PaymentMethod
+  fees            Float?
+  contract        String?
+  receipt         String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Snapshot fields to preserve history
+  customerFirstName   String
+  customerLastName    String
+  customerPhoneNumber String
+  customerEmail       String?
+  customerStartDate   DateTime?
+  customerEndDate     DateTime?
+  roomNumber          String?
+  floorNumber         String?
+
+  propertyTitle   String
+  propertyAddress String
 }
 
 enum PropertyStatus {
@@ -68,7 +123,6 @@ enum PropertyStatus {
 }
 
 enum UserType {
-  TENANT
   OWNER
   ADMIN
 }
@@ -85,4 +139,26 @@ enum UserStatus {
   INACTIVE
   BANNED
   DELETED
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TransactionType {
+  RENT
+  SALE
+  DEPOSIT
+  OTHER
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CARD
+  MOBILE_MONEY
+  OTHER
 }
