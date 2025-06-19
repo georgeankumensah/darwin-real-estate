@@ -9,7 +9,6 @@ import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
-import {LoadingIndicator} from "@/components/ui/loading-indicator"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {
     DropdownMenu,
@@ -21,12 +20,52 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {useAllOwners} from "@/hooks/api/owners/useAllOwners"
-import {useDebounce} from "@/hooks/useDebounce";
+import {useDebounce} from "@/hooks/useDebounce"
+import {Skeleton} from "@/components/ui/skeleton";
+
+function OwnersTableSkeleton() {
+    return (
+        <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Properties</TableHead>
+                        <TableHead>Sales</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {Array(5).fill(0).map((_, index) => (
+                        <TableRow key={index}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Skeleton className="h-10 w-10 rounded-full" />
+                                    <div>
+                                        <Skeleton className="h-5 w-32 mb-1" />
+                                        <Skeleton className="h-4 w-40" />
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-12" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                            <TableCell className="text-right">
+                                <Skeleton className="h-8 w-20 ml-auto" />
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+}
 
 type Filter = {
     status?: string
-    location?: string
-    properties?: string
 }
 
 export default function OwnersClientPage() {
@@ -47,24 +86,17 @@ export default function OwnersClientPage() {
     // Apply filters to the owners list
     const filteredOwners = owners.filter((owner) => {
         // Search filter
-        // const searchString = `${owner.firstName} ${owner.lastName} ${owner.email} ${owner.phoneNumber}`.toLowerCase()
-        // const matchesSearch = searchQuery === "" || searchString.includes(searchQuery.toLowerCase())
-        //
-        // // Status filter
-        // const matchesStatus =
-        //     filters.status === "all" ||
-        //     (filters.status === "active" && owner.status === "Active") ||
-        //     (filters.status === "on-leave" && owner.status === "On Leave")
-        //
-        // // Properties filter
-        // const matchesProperties =
-        //     filters.properties === "all" ||
-        //     (filters.properties === "0-5" && owner.properties.length >= 0 && owner.properties.length <= 5) ||
-        //     (filters.properties === "6-10" && owner.properties.length >= 6 && owner.properties.length <= 10) ||
-        //     (filters.properties === "11+" && owner.properties.length >= 11)
-        //
-        // return matchesSearch && matchesStatus && matchesProperties
-        return true
+        const searchString = `${owner.firstName} ${owner.lastName} ${owner.email} ${owner.phoneNumber}`.toLowerCase()
+        const matchesSearch = searchQuery === "" || searchString.includes(searchQuery.toLowerCase())
+
+        // Status filter
+        const matchesStatus =
+            !filters.status || filters.status === "" ||
+            (filters.status === "active" && owner.status === "ACTIVE") ||
+            (filters.status === "inactive" && owner.status === "INACTIVE") ||
+            (filters.status === "pending" && owner.status === "PENDING")
+
+        return matchesSearch && matchesStatus
     })
 
     const applyFilters = () => {
@@ -72,8 +104,6 @@ export default function OwnersClientPage() {
 
         // Normalize "all" to empty strings so they don't interfere with logic
         if (newFilters.status === "all") newFilters.status = ""
-        if (newFilters.properties === "all") newFilters.properties = ""
-        if (newFilters.location === "all") newFilters.location = ""
 
         setFilters(newFilters)
 
@@ -83,31 +113,22 @@ export default function OwnersClientPage() {
             newActiveFilters.push(`Status: ${newFilters.status === "active" ? "Active" : "On Leave"}`)
         }
 
-        if (newFilters.properties) {
-            const propertiesLabel =
-                newFilters.properties === "0-5"
-                    ? "0-5 properties"
-                    : newFilters.properties === "6-10"
-                        ? "6-10 properties"
-                        : "11+ properties"
-            newActiveFilters.push(`Properties: ${propertiesLabel}`)
-        }
-
-        if (newFilters.location) {
-            const locationLabel = newFilters.location.replace(/-/g, " ")
-            newActiveFilters.push(`Location: ${locationLabel}`)
-        }
-
         setActiveFilters(newActiveFilters)
     }
 
     const resetFilters = () => {
-        setTempFilters({})
+        setTempFilters({
+            status: "all"
+        })
     }
 
     const clearAllFilters = () => {
-        setFilters({})
-        setTempFilters({})
+        setFilters({
+            status: "all"
+        })
+        setTempFilters({
+            status: "all"
+        })
         setActiveFilters([])
     }
 
@@ -121,12 +142,6 @@ export default function OwnersClientPage() {
         if (filter.startsWith("Status:")) {
             updatedFilters.status = ""
             updatedTempFilters.status = ""
-        } else if (filter.startsWith("Location:")) {
-            updatedFilters.location = ""
-            updatedTempFilters.location = ""
-        } else if (filter.startsWith("Properties:")) {
-            updatedFilters.properties = ""
-            updatedTempFilters.properties = ""
         }
 
         setFilters(updatedFilters)
@@ -230,45 +245,6 @@ export default function OwnersClientPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-2 mt-4">
-                                        <Label htmlFor="location-filter">Location</Label>
-                                        <Select
-                                            value={tempFilters.location}
-                                            onValueChange={(value) => setTempFilters({...tempFilters, location: value})}
-                                        >
-                                            <SelectTrigger id="location-filter">
-                                                <SelectValue placeholder="Any location"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">Any location</SelectItem>
-                                                <SelectItem value="san-francisco">San Francisco, CA</SelectItem>
-                                                <SelectItem value="new-york">New York, NY</SelectItem>
-                                                <SelectItem value="miami">Miami, FL</SelectItem>
-                                                <SelectItem value="los-angeles">Los Angeles, CA</SelectItem>
-                                                <SelectItem value="chicago">Chicago, IL</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2 mt-4">
-                                        <Label htmlFor="properties-filter">Properties</Label>
-                                        <Select
-                                            value={tempFilters.properties}
-                                            onValueChange={(value) => setTempFilters({
-                                                ...tempFilters,
-                                                properties: value
-                                            })}
-                                        >
-                                            <SelectTrigger id="properties-filter">
-                                                <SelectValue placeholder="Any number"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">Any number</SelectItem>
-                                                <SelectItem value="0-5">0-5 properties</SelectItem>
-                                                <SelectItem value="6-10">6-10 properties</SelectItem>
-                                                <SelectItem value="11+">11+ properties</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
                                     <div className="flex items-center justify-between mt-4">
                                         <Button variant="outline" size="sm" onClick={resetFilters}>
                                             Reset
@@ -304,16 +280,14 @@ export default function OwnersClientPage() {
                     )}
 
                     {isLoading ? (
-                        <LoadingIndicator text="Loading owners..." />
+                        <OwnersTableSkeleton />
                     ) : (
                         <div className="rounded-md border">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Owner</TableHead>
-                                        <TableHead>Location</TableHead>
                                         <TableHead>Properties</TableHead>
-                                        <TableHead>Sales</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
@@ -343,14 +317,12 @@ export default function OwnersClientPage() {
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>{owner.location}</TableCell>
                                                 <TableCell>
                                                   <Badge variant="outline">{owner.properties}</Badge>
                                                 </TableCell>
-                                                <TableCell>{owner.sales}</TableCell>
                                                 <TableCell>
                                                   <Badge
-                                                      variant={owner.status === "Active" ? "default" : "secondary"}
+                                                      variant={owner.status.toLowerCase() === "active" ? "default" : "secondary"}
                                                       className={owner.status === "Active" ? "bg-green-500" : ""}
                                                   >
                                                     {owner.status}
