@@ -4,9 +4,9 @@ import {UpdateOwnerSchema} from "@/lib/validators/owner.validation";
 
 export async function GET(
     request: NextRequest,
-    {params}: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const id = params.id;
+    const id = (await params).id;
 
     try {
         const owner = await prisma.user.findUniqueOrThrow({
@@ -50,9 +50,9 @@ export async function GET(
 
 export async function DELETE(
     request: NextRequest,
-    {params}: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const id = params.id;
+    const id = (await params).id;
 
     try {
         await prisma.user.delete({
@@ -70,9 +70,9 @@ export async function DELETE(
 
 export async function PATCH(
     request: NextRequest,
-    {params}: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const id = params.id;
+    const id = (await params).id;
 
     try {
         const body = await request.json();

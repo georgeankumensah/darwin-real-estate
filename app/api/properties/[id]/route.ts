@@ -4,9 +4,9 @@ import {uploadToCloudinary, deleteFromCloudinary} from '@/lib/helpers/cloudinary
 
 export async function GET(
     request: NextRequest,
-    {params}: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const {id} = params;
+    const id = (await params).id;
 
     try {
         const property = await prisma.property.findUnique({
@@ -45,9 +45,9 @@ export async function GET(
 
 export async function DELETE(
     request: NextRequest,
-    {params}: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const {id} = params;
+    const id = (await params).id;
 
     try {
         const property = await prisma.property.findUnique({
@@ -87,9 +87,9 @@ export async function DELETE(
 
 export async function PATCH(
     request: NextRequest,
-    {params}: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const propertyId = params.id;
+    const propertyId = (await params).id;
     const formData = await request.formData();
 
     try {

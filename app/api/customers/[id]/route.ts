@@ -3,9 +3,9 @@ import { NextRequest } from "next/server";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params;
+    const id = (await params).id;
 
     try {
         const customer = await prisma.customer.findUniqueOrThrow({
@@ -28,9 +28,9 @@ export async function GET(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params;
+    const id = (await params).id;
     const body = await request.json();
 
     try {
@@ -57,9 +57,10 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params;
+    const id = (await params).id;
+
 
     try {
         await prisma.customer.delete({ where: { id } });
