@@ -20,11 +20,11 @@ export function DashboardSidebar() {
             href: "/properties",
             icon: "/properties.svg",
         },
-        {
-            title: "Tenants",
-            href: "/tenants",
-            icon: "/tenants.svg",
-        },
+        // {
+        //     title: "Tenants",
+        //     href: "/tenants",
+        //     icon: "/tenants.svg",
+        // },
         {
             title: "Transactions",
             href: "/transactions",

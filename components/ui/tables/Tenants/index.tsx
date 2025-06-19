@@ -33,10 +33,55 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {useDebounce} from "@/hooks/useDebounce";
-import {useAllTenants} from "@/hooks/api/tenants/useAllTenants";
+import {useAllCustomers} from "@/hooks/api/customers/useAllCustomers";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function TenantsTableSkeleton() {
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Tenant</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead>Property</TableHead>
+            <TableHead>Lease Term</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array(5).fill(0).map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div>
+                    <Skeleton className="h-5 w-32 mb-1" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-32 mb-1" />
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="h-8 w-20 ml-auto" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
 
 type Filter = {
-  location?: string;
+  status?: string;
 };
 
 export default function TenantsTable() {
@@ -46,7 +91,7 @@ export default function TenantsTable() {
   const [tempFilters, setTempFilters] = useState<Filter>({})
   const [activeFilters, setActiveFilters] = useState<string[]>([])
 
-  const {data, isLoading, isError, error} = useAllTenants({
+  const {data, isLoading, isError, error} = useAllCustomers({
     search: debouncedSearchQuery,
     page: 1,
     limit: 10
@@ -61,24 +106,14 @@ export default function TenantsTable() {
     const matchesSearch =
         searchQuery === "" || searchString.includes(searchQuery.toLowerCase());
 
-    // Location filter
-    const matchesLocation =
-        !filters.location || filters.location === "all" ||
-        tenant.location?.includes(
-            filters.location === "new-york"
-                ? "New York"
-                : filters.location === "los-angeles"
-                    ? "Los Angeles"
-                    : filters.location === "chicago"
-                        ? "Chicago"
-                        : filters.location === "miami"
-                            ? "Miami"
-                            : filters.location === "seattle"
-                                ? "Seattle"
-                                : ""
-        );
+    // Status filter
+    const matchesStatus =
+        !filters.status || filters.status === "all" ||
+        (filters.status === "active" && tenant.status === "ACTIVE") ||
+        (filters.status === "inactive" && tenant.status === "INACTIVE") ||
+        (filters.status === "pending" && tenant.status === "PENDING");
 
-    return matchesSearch && matchesLocation;
+    return matchesSearch && matchesStatus;
   });
 
   const applyFilters = () => {
@@ -87,20 +122,16 @@ export default function TenantsTable() {
     // Update active filters
     const newActiveFilters: string[] = [];
 
-    if (tempFilters.location && tempFilters.location !== "all") {
-      const locationLabel =
-          tempFilters.location === "new-york"
-              ? "New York"
-              : tempFilters.location === "los-angeles"
-                  ? "Los Angeles"
-                  : tempFilters.location === "chicago"
-                      ? "Chicago"
-                      : tempFilters.location === "miami"
-                          ? "Miami"
-                          : tempFilters.location === "seattle"
-                              ? "Seattle"
-                              : "";
-      newActiveFilters.push(`Location: ${locationLabel}`);
+    if (tempFilters.status && tempFilters.status !== "all") {
+      const statusLabel =
+          tempFilters.status === "active"
+              ? "ACTIVE"
+              : tempFilters.status === "inactive"
+                  ? "INACTIVE"
+                  : tempFilters.status === "pending"
+                      ? "PENDING"
+                      : "";
+      newActiveFilters.push(`Status: ${statusLabel}`);
     }
 
     setActiveFilters(newActiveFilters);
@@ -108,16 +139,16 @@ export default function TenantsTable() {
 
   const resetFilters = () => {
     setTempFilters({
-      location: "all",
+      status: "all",
     });
   };
 
   const clearAllFilters = () => {
     setFilters({
-      location: "all",
+      status: "all",
     });
     setTempFilters({
-      location: "all",
+      status: "all",
     });
     setActiveFilters([]);
   };
@@ -127,9 +158,9 @@ export default function TenantsTable() {
     setActiveFilters(newActiveFilters);
 
     // Update the actual filters
-    if (filter.startsWith("Location:")) {
-      setFilters({ ...filters, location: "all" });
-      setTempFilters({ ...tempFilters, location: "all" });
+    if (filter.startsWith("Status:")) {
+      setFilters({ ...filters, status: "all" });
+      setTempFilters({ ...tempFilters, status: "all" });
     }
   };
 
@@ -159,25 +190,21 @@ export default function TenantsTable() {
               <DropdownMenuSeparator />
               <div className="p-2">
                 <div className="space-y-2">
-                  <Label htmlFor="location-filter">Location</Label>
+                  <Label htmlFor="status-filter">Status</Label>
                   <Select
-                      value={tempFilters.location || "all"}
+                      value={tempFilters.status || "all"}
                       onValueChange={(value) =>
-                          setTempFilters({ ...tempFilters, location: value })
+                          setTempFilters({ ...tempFilters, status: value })
                       }
                   >
-                    <SelectTrigger id="location-filter">
-                      <SelectValue placeholder="Any location" />
+                    <SelectTrigger id="status-filter">
+                      <SelectValue placeholder="Any status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Any location</SelectItem>
-                      <SelectItem value="new-york">New York, NY</SelectItem>
-                      <SelectItem value="los-angeles">
-                        Los Angeles, CA
-                      </SelectItem>
-                      <SelectItem value="chicago">Chicago, IL</SelectItem>
-                      <SelectItem value="miami">Miami, FL</SelectItem>
-                      <SelectItem value="seattle">Seattle, WA</SelectItem>
+                      <SelectItem value="all">Any status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -225,16 +252,16 @@ export default function TenantsTable() {
         )}
 
         {isLoading ? (
-          <LoadingIndicator text="Loading tenants..." />
+          <TenantsTableSkeleton />
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Tenant</TableHead>
-                  <TableHead>Location</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Properties</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Joined</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -265,14 +292,21 @@ export default function TenantsTable() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>{tenant.location || "—"}</TableCell>
                           <TableCell>{tenant.phoneNumber}</TableCell>
                           <TableCell>
-                            {tenant.properties > 0 ? (
+                            {tenant.properties?.length > 0 ? (
                                 <Badge variant="outline">{tenant.properties}</Badge>
                             ) : (
                                 <span className="text-muted-foreground">None</span>
                             )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                                variant={tenant.status === "Active" ? "default" : "secondary"}
+                                className={tenant.status === "Active" ? "bg-green-500" : ""}
+                            >
+                              {tenant.status || "Unknown"}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             {new Date(tenant.createdAt).toLocaleDateString()}
