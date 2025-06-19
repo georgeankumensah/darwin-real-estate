@@ -44,8 +44,18 @@ export default function NewOwnerPage() {
             location: formData.location,
         }
 
-        createOwner(submitData)
-        router.push('/owners')
+        await createOwner(submitData)
+
+        // Check if we came from the property form
+        const propertyFormState = localStorage.getItem('propertyFormState')
+
+        if (propertyFormState) {
+            // Redirect back to the property form
+            router.push('/properties/new')
+        } else {
+            // Normal flow - redirect to owners list
+            router.push('/owners')
+        }
     }
 
     return (

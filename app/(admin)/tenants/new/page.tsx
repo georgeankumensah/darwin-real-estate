@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {useRouter} from "next/navigation";
-import {useState} from "react";
-import { useCreateTenant } from "@/hooks/api/tenants/useCreateTenant"
+import React, {useState} from "react";
+import { useCreateCustomer } from "@/hooks/api/customers/useCreateCustomer"
 
 export default function NewTenantPage() {
   const router = useRouter();
@@ -18,9 +18,9 @@ export default function NewTenantPage() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    phoneNumber2: '',
-    location: '',
-    image: null as File | null
+    startDate: new Date(),
+    endDate: new Date(),
+    propertyId: ''
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -30,7 +30,7 @@ export default function NewTenantPage() {
     }))
   }
 
-  const {mutate: createTenant} = useCreateTenant()
+  const {mutateAsync: createTenant, isPending} = useCreateCustomer()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,21 +40,31 @@ export default function NewTenantPage() {
       lastName: formData.lastName,
       email: formData.email,
       phoneNumber: formData.phoneNumber,
-      phoneNumber2: formData.phoneNumber2 || undefined,
-      location: formData.location,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      propertyId: formData.propertyId
     }
 
-    createTenant(submitData)
-    router.push('/tenants')
+    await createTenant(submitData)
+
+    // Check if we came from the transaction form
+    const transactionFormState = localStorage.getItem('transactionFormState')
+    const transactionFormStep = localStorage.getItem('transactionFormStep')
+
+    if (transactionFormState && transactionFormStep) {
+      // Redirect back to the transaction form
+      router.push('/transactions/new')
+    } else {
+      // Normal flow - redirect to tenants list
+      router.push('/tenants')
+    }
   }
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/tenants">
+        <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
-          </Link>
         </Button>
         <h1 className="text-2xl font-semibold">Add New Tenant</h1>
       </div>
@@ -108,24 +118,24 @@ export default function NewTenantPage() {
                     required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber2">Alternative Phone (Optional)</Label>
-                <Input
-                    id="phoneNumber2"
-                    placeholder="Enter alternative phone"
-                    value={formData.phoneNumber2}
-                    onChange={(e) => handleInputChange('phoneNumber2', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                    id="location"
-                    placeholder="Enter location"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                />
-              </div>
+              {/*<div className="space-y-2">*/}
+              {/*  <Label htmlFor="phoneNumber2">Alternative Phone (Optional)</Label>*/}
+              {/*  <Input*/}
+              {/*      id="phoneNumber2"*/}
+              {/*      placeholder="Enter alternative phone"*/}
+              {/*      value={formData.startDate}*/}
+              {/*      onChange={(e) => handleInputChange('phoneNumber2', e.target.value)}*/}
+              {/*  />*/}
+              {/*</div>*/}
+              {/*<div className="space-y-2">*/}
+              {/*  <Label htmlFor="location">Location</Label>*/}
+              {/*  <Input*/}
+              {/*      id="location"*/}
+              {/*      placeholder="Enter location"*/}
+              {/*      value={formData.endDate}*/}
+              {/*      onChange={(e) => handleInputChange('location', e.target.value)}*/}
+              {/*  />*/}
+              {/*</div>*/}
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
                 <Select defaultValue="TENANT">
