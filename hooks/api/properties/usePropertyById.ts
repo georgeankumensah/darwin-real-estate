@@ -1,36 +1,15 @@
-import {api} from "@/lib/api";
-import {useQuery} from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import {PropertyWithMedia} from "@/hooks/api/properties/useAllProperties";
 
-export type Property = {
-    id: string;
-    propertyType: string;
-    title: string;
-    images: string[];
-    address: string;
-    currency: string;
-    price: string;
-    bedrooms: number;
-    bathrooms: number;
-    area: number;
-    yearBuilt: number;
-    status: string;
-    description: string;
-};
-
-export const usePropertyById = (id: string | Array<string>) => {
-
-    return useQuery({
+export const usePropertyById = (id?: string) => {
+    return useQuery<PropertyWithMedia>({
         queryKey: ["properties", id],
         queryFn: async () => {
-
-            const response = await api.get<Property>(
-                `/properties/${id}`
-            );
-
+            const response = await api.get<PropertyWithMedia>(`/properties/${id}`);
             return response.data;
         },
-
+        enabled: !!id,
         staleTime: 5 * 60 * 1000,
-        // cacheTime: 10 * 60 * 1000,
     });
 };

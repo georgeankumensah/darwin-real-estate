@@ -1,32 +1,39 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {api} from "@/lib/api";
-import {CreatePropertyInput} from "@/lib/validators/property.validation";
-import {useToast} from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { CreatePropertyInput } from "@/lib/validators/property.validation";
+import { useToast } from "@/hooks/use-toast";
 
 export const useCreateProperty = () => {
     const queryClient = useQueryClient();
-    const {toast} = useToast();
+    const { toast } = useToast();
 
     return useMutation({
         mutationFn: async (data: CreatePropertyInput) => {
             const formData = new FormData();
 
-            formData.append("title", String(data.title || ""));
-            formData.append("type", String(data.type || ""));
-            formData.append("status", String(data.status || ""));
-            formData.append("yearBuilt", String(data.yearBuilt || 0));
-            formData.append("currency", String(data.currency || ""));
+            // Add all property fields
+            formData.append("title", data.title || "");
+            formData.append("propertyType", data.propertyType || "");
+            formData.append("status", data.status || "");
+            formData.append("currency", data.currency || "");
             formData.append("price", String(data.price || 0));
             formData.append("bedrooms", String(data.bedrooms || 0));
             formData.append("bathrooms", String(data.bathrooms || 0));
             formData.append("area", String(data.area || 0));
-            formData.append("address", String(data.address || ""));
-            formData.append("description", String(data.description || ""));
+            formData.append("yearBuilt", String(data.yearBuilt || new Date().getFullYear()));
+            formData.append("address", data.address || "");
+            formData.append("description", data.description || "");
 
-            if (data.images && Array.isArray(data.images)) {
-                data.images.forEach((file) => {
+            // Add ownerId if provided
+            if (data.ownerId) {
+                formData.append("ownerId", data.ownerId);
+            }
+
+            // Handle media files - your backend expects 'media' field name
+            if (Array.isArray(data.media)) {
+                data.media.forEach((file) => {
                     if (file instanceof File) {
-                        formData.append("images", file);
+                        formData.append("media", file); // Changed from "images" to "media"
                     }
                 });
             }
@@ -39,19 +46,24 @@ export const useCreateProperty = () => {
 
             return response.data;
         },
+
         onSuccess: (newProperty) => {
             toast({
-                variant: "success",
-                description: `Property ${newProperty.title} created successfully`,
+                variant: "default", // Changed from "success" to "default" - check your toast component
+                description: `Property "${newProperty.property?.title || 'New Property'}" created successfully.`,
             });
-            queryClient.invalidateQueries({queryKey: ["properties"]});
+            queryClient.invalidateQueries({ queryKey: ["properties"] });
         },
+
         onError: (error: any) => {
-            console.error("Failed to create property:", error?.response?.data || error.message);
+            console.error("Property creation failed:", error?.response?.data || error.message);
             toast({
-                variant: "error",
+                variant: "destructive", // Changed from "error" to "destructive" - standard shadcn/ui variant
                 description:
-                    error?.response?.data?.message || "An error occurred while creating the property.",
+                    error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    "An unexpected error occurred while creating the property.",
             });
         },
     });

@@ -1,16 +1,6 @@
 import {api} from "@/lib/api";
 import {useQuery} from "@tanstack/react-query";
-
-export type Owner = {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    status: string;
-    properties: string[];
-    image: string;
-};
+import {User} from "@/app/generated/prisma";
 
 export type Pagination = {
     page: number;
@@ -21,7 +11,7 @@ export type Pagination = {
 
 
 export type OwnersResponse = {
-    owners: Owner[];
+    owners: User[];
     pagination: Pagination;
 };
 
@@ -55,6 +45,5 @@ export const useAllOwners = (filters: OwnerFilters = {}) => {
         },
 
         staleTime: 5 * 60 * 1000,
-        // cacheTime: 10 * 60 * 1000,
     });
 };
