@@ -1,24 +1,48 @@
-import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import {NextRequest} from 'next/server';
+import {prisma} from '@/lib/prisma';
 import {UpdateOwnerSchema} from "@/lib/validators/owner.validation";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } },
+    {params}: { params: { id: string } },
 ) {
     const id = params.id;
 
     try {
         const owner = await prisma.user.findUniqueOrThrow({
-            where: { type: 'OWNER', id },
+            where: {id},
+            include: {
+                ownedProperties: {
+                    include: {
+                        media: true,
+                        transactions: {
+                            orderBy: {
+                                transactionDate: 'desc'
+                            }
+                        }
+                    }
+                }
+            },
         });
 
-        return new Response(JSON.stringify(owner), {
+        // Flatten all transactions from all properties owned by this owner
+        const allTransactions = owner.ownedProperties.flatMap(property =>
+            property.transactions || []
+        );
+
+        // Add transactions as a separate field for easier access
+        const ownerWithTransactions = {
+            ...owner,
+            transactions: allTransactions
+        };
+
+        return new Response(JSON.stringify(ownerWithTransactions), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
         });
     } catch (error) {
-        return new Response(JSON.stringify({ error: 'Property not found' }), {
+        console.error('Error fetching owner:', error);
+        return new Response(JSON.stringify({error: 'Owner not found'}), {
             status: 404,
         });
     }
@@ -26,18 +50,19 @@ export async function GET(
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } },
+    {params}: { params: { id: string } },
 ) {
     const id = params.id;
 
     try {
         await prisma.user.delete({
-            where: { type: 'OWNER', id },
+            where: {type: 'OWNER', id},
         });
 
-        return new Response(null, { status: 204 });
+        return new Response(null, {status: 204});
     } catch (error) {
-        return new Response(JSON.stringify({ error: 'Property not found' }), {
+        console.error('Error deleting owner:', error);
+        return new Response(JSON.stringify({error: 'Owner not found'}), {
             status: 404,
         });
     }
@@ -45,8 +70,8 @@ export async function DELETE(
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } },
-){
+    {params}: { params: { id: string } },
+) {
     const id = params.id;
 
     try {
@@ -55,24 +80,25 @@ export async function PATCH(
         const result = UpdateOwnerSchema.safeParse(body);
 
         if (!result.success) {
-            return new Response(JSON.stringify({ error: result.error.message }), {
+            return new Response(JSON.stringify({error: result.error.message}), {
                 status: 400,
             });
         }
 
-        const property = await prisma.user.update({
-            where: { type: 'OWNER', id },
+        const owner = await prisma.user.update({
+            where: {type: 'OWNER', id},
             data: {
                 ...result.data,
             },
         });
 
-        return new Response(JSON.stringify(property), {
+        return new Response(JSON.stringify(owner), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
         });
     } catch (error) {
-        return new Response(JSON.stringify({ error: 'Property not found' }), {
+        console.error('Error updating owner:', error);
+        return new Response(JSON.stringify({error: 'Owner not found'}), {
             status: 404,
         });
     }

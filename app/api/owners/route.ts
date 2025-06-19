@@ -1,9 +1,10 @@
 import {prisma} from "@/lib/prisma";
 import {NextRequest} from "next/server";
 import {CreateUserSchema} from "@/lib/validators/owner.validation";
+import * as bcrypt from "bcrypt";
 
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
+    const {searchParams} = new URL(request.url);
 
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
@@ -18,9 +19,9 @@ export async function GET(request: NextRequest) {
 
     if (search) {
         where.OR = [
-            { email: { contains: search, mode: "insensitive" } },
-            { firstName: { contains: search, mode: "insensitive" } },
-            { lastName: { contains: search, mode: "insensitive" } },
+            {email: {contains: search, mode: "insensitive"}},
+            {firstName: {contains: search, mode: "insensitive"}},
+            {lastName: {contains: search, mode: "insensitive"}},
         ];
     }
 
@@ -28,59 +29,89 @@ export async function GET(request: NextRequest) {
         where.status = status;
     }
 
-    // Get total count first
-    const total = await prisma.user.count({ where });
+    try {
+        const total = await prisma.user.count({where});
 
-    // Fetch paginated results
-    const owners = await prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            phoneNumber: true,
-            status: true,
-        },
-    });
+        const owners = await prisma.user.findMany({
+            where,
+            skip,
+            take: limit,
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                phoneNumber: true,
+                status: true,
+            },
+        });
 
-    return new Response(JSON.stringify({
-        owners,
-        pagination: {
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        },
-    }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-    });
-}
+        return new Response(JSON.stringify({
+            owners,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        }), {
+            status: 200,
+            headers: {'Content-Type': 'application/json'},
+        });
 
-export async function POST(request: Request) {
-    const body = await request.json();
-
-    const result = CreateUserSchema.safeParse(body);
-
-    if (!result.success) {
-        return new Response(JSON.stringify({errors: result.error.flatten()}), {
-            status: 400,
+    } catch (error) {
+        console.error("GET /owners error:", error);
+        return new Response(JSON.stringify({error: "Failed to fetch owners"}), {
+            status: 500,
             headers: {'Content-Type': 'application/json'},
         });
     }
+}
 
-    const property = await prisma.user.create({
-        data: {
-            ...result.data,
-            type: 'OWNER',
-        },
-    });
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+        const result = CreateUserSchema.safeParse(body);
 
-    return new Response(JSON.stringify(property), {
-        status: 201,
-        headers: {'Content-Type': 'application/json'},
-    });
+        if (!result.success) {
+            return new Response(JSON.stringify({errors: result.error.flatten()}), {
+                status: 400,
+                headers: {'Content-Type': 'application/json'},
+            });
+        }
+
+        const {email, password, ...rest} = result.data;
+
+        const existing = await prisma.user.findUnique({where: {email}});
+        if (existing) {
+            return new Response(JSON.stringify({error: "Email already in use"}), {
+                status: 409,
+                headers: {'Content-Type': 'application/json'},
+            });
+        }
+
+        // TODO: Fix this
+        const hashedPassword = password ? await bcrypt.hash(password, 10) : " ";
+
+        const owner = await prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                type: 'OWNER',
+                ...rest,
+            },
+        });
+
+        return new Response(JSON.stringify(owner), {
+            status: 201,
+            headers: {'Content-Type': 'application/json'},
+        });
+
+    } catch (error) {
+        console.error("POST /owners error:", error);
+        return new Response(JSON.stringify({error: "Failed to create user"}), {
+            status: 500,
+            headers: {'Content-Type': 'application/json'},
+        });
+    }
 }
