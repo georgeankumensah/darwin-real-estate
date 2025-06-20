@@ -42,7 +42,7 @@ export async function signup(state: FormState, formData: FormData) {
             email,
             password: hashedPassword,
             phoneNumber: "",
-            type: 'TENANT',
+            type: 'OWNER'
         },
     })
 

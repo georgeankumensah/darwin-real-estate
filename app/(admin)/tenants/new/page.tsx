@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {useRouter} from "next/navigation";
 import React, {useState} from "react";
 import { useCreateCustomer } from "@/hooks/api/customers/useCreateCustomer"
+import {$Enums} from "@/app/generated/prisma";
+import UserStatus = $Enums.UserStatus;
 
 export default function NewTenantPage() {
   const router = useRouter();
@@ -42,7 +44,8 @@ export default function NewTenantPage() {
       phoneNumber: formData.phoneNumber,
       startDate: formData.startDate,
       endDate: formData.endDate,
-      propertyId: formData.propertyId
+      propertyId: formData.propertyId,
+      status: UserStatus.ACTIVE
     }
 
     await createTenant(submitData)

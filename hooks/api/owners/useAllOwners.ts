@@ -15,7 +15,6 @@ export type OwnersResponse = {
     pagination: Pagination;
 };
 
-
 export type OwnerFilters = {
     search?: string;
     status?: string;

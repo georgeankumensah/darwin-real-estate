@@ -94,7 +94,7 @@ export default function OwnersClientPage() {
             !filters.status || filters.status === "" ||
             (filters.status === "active" && owner.status === "ACTIVE") ||
             (filters.status === "inactive" && owner.status === "INACTIVE") ||
-            (filters.status === "pending" && owner.status === "PENDING")
+            (filters.status === "banned" && owner.status === "BANNED")
 
         return matchesSearch && matchesStatus
     })
@@ -178,7 +178,7 @@ export default function OwnersClientPage() {
                     </CardHeader>
                     <CardContent>
                         <div
-                            className="text-2xl font-bold">{owners.filter((owner) => owner.status === "Active").length}</div>
+                            className="text-2xl font-bold">{owners.filter((owner) => owner.status === "ACTIVE").length}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -300,7 +300,7 @@ export default function OwnersClientPage() {
                                                     <div className="flex items-center gap-3">
                                                         <Avatar>
                                                             <AvatarImage
-                                                                src={owner.image || "/placeholder.svg"}
+                                                                src={"/placeholder.svg"}
                                                                 alt={`${owner.firstName} ${owner.lastName}`}
                                                             />
                                                             <AvatarFallback>
@@ -317,13 +317,13 @@ export default function OwnersClientPage() {
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>
-                                                  <Badge variant="outline">{owner.properties}</Badge>
-                                                </TableCell>
+                                                {/*<TableCell>*/}
+                                                {/*  <Badge variant="outline">{owner.properties}</Badge>*/}
+                                                {/*</TableCell>*/}
                                                 <TableCell>
                                                   <Badge
                                                       variant={owner.status.toLowerCase() === "active" ? "default" : "secondary"}
-                                                      className={owner.status === "Active" ? "bg-green-500" : ""}
+                                                      className={owner.status === "ACTIVE" ? "bg-green-500" : ""}
                                                   >
                                                     {owner.status}
                                                   </Badge>

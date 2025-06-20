@@ -1,15 +1,17 @@
 import {api} from "@/lib/api";
 import {useQuery} from "@tanstack/react-query";
-import {Transaction} from "@/app/generated/prisma";
+import {Prisma} from "@/app/generated/prisma";
 import {Pagination} from "@/lib/types/pagination";
 
-export type TransactionWithProperty = Transaction & {
-    property: {
-        title: string;
-        images: string[];
-        address: string;
+export type TransactionWithProperty = Prisma.TransactionGetPayload<{
+    include: {
+        property: {
+            include: {
+                media: true;
+            };
+        };
     };
-};
+}>;
 
 export type TransactionsResponse = {
     transactions: TransactionWithProperty[];

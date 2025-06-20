@@ -96,7 +96,7 @@ export default function TenantsTable() {
     page: 1,
     limit: 10
   })
-  const tenants = data?.tenants || []
+  const tenants = data?.customers || []
 
   // Apply filters to the tenant list
   const filteredTenants = tenants.filter((tenant) => {
@@ -110,7 +110,7 @@ export default function TenantsTable() {
     const matchesStatus =
         !filters.status || filters.status === "all" ||
         (filters.status === "active" && tenant.status === "ACTIVE") ||
-        (filters.status === "inactive" && tenant.status === "INACTIVE") ||
+        (filters.status === "terminated" && tenant.status === "TERMINATED") ||
         (filters.status === "pending" && tenant.status === "PENDING");
 
     return matchesSearch && matchesStatus;
@@ -126,7 +126,7 @@ export default function TenantsTable() {
       const statusLabel =
           tempFilters.status === "active"
               ? "ACTIVE"
-              : tempFilters.status === "inactive"
+              : tempFilters.status === "terminated"
                   ? "INACTIVE"
                   : tempFilters.status === "pending"
                       ? "PENDING"
@@ -203,7 +203,7 @@ export default function TenantsTable() {
                     <SelectContent>
                       <SelectItem value="all">Any status</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="terminated">Inactive</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                     </SelectContent>
                   </Select>
@@ -274,7 +274,7 @@ export default function TenantsTable() {
                             <div className="flex items-center gap-3">
                               <Avatar>
                                 <AvatarImage
-                                    src={tenant.image || "/placeholder.svg"}
+                                    src={"/placeholder.svg"}
                                     alt={`${tenant.firstName} ${tenant.lastName}`}
                                 />
                                 <AvatarFallback>
@@ -293,17 +293,17 @@ export default function TenantsTable() {
                             </div>
                           </TableCell>
                           <TableCell>{tenant.phoneNumber}</TableCell>
-                          <TableCell>
-                            {tenant.properties?.length > 0 ? (
-                                <Badge variant="outline">{tenant.properties}</Badge>
-                            ) : (
-                                <span className="text-muted-foreground">None</span>
-                            )}
-                          </TableCell>
+                          {/*<TableCell>*/}
+                          {/*  {tenant.properties?.length > 0 ? (*/}
+                          {/*      <Badge variant="outline">{tenant.properties}</Badge>*/}
+                          {/*  ) : (*/}
+                          {/*      <span className="text-muted-foreground">None</span>*/}
+                          {/*  )}*/}
+                          {/*</TableCell>*/}
                           <TableCell>
                             <Badge
-                                variant={tenant.status === "Active" ? "default" : "secondary"}
-                                className={tenant.status === "Active" ? "bg-green-500" : ""}
+                                variant={tenant.status === "ACTIVE" ? "default" : "secondary"}
+                                className={tenant.status === "ACTIVE" ? "bg-green-500" : ""}
                             >
                               {tenant.status || "Unknown"}
                             </Badge>

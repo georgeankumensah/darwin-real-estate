@@ -4,13 +4,46 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { formatPrice } from "@/lib/helpers/formatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
-import {PropertyWithMedia} from "@/hooks/api/properties/useAllProperties";
 
-type PropertyCardProps = {
-    property: PropertyWithMedia
+// Base property type without media
+type BaseProperty = {
+    id: string;
+    title: string;
+    description: string;
+    propertyType: string;
+    currency: string;
+    price: number;
+    bedrooms: number;
+    bathrooms: number;
+    area: number;
+    yearBuilt: number;
+    address: string;
+    features: string[];
+    status: string;
 };
 
-export function PropertyCard({property}:PropertyCardProps) {
+// Media type
+type PropertyMedia = {
+    id: string;
+    createdAt: Date;
+    type: string;
+    url: string;
+    publicId: string;
+    propertyId: string;
+};
+
+// Flexible property type that can have media or not
+type PropertyCardProperty = BaseProperty & {
+    media?: PropertyMedia[];
+};
+
+type PropertyCardProps = {
+    property: PropertyCardProperty;
+};
+
+export function PropertyCard({ property }: PropertyCardProps) {
+    const firstMediaUrl = property.media?.[0]?.url || "/placeholder.svg";
+
     return (
         <Link
             href={`/properties/${property.id}`}
@@ -18,7 +51,7 @@ export function PropertyCard({property}:PropertyCardProps) {
         >
             <div className="aspect-[4/3] relative overflow-hidden">
                 <img
-                    src={property.media[0].url || "/placeholder.svg"}
+                    src={firstMediaUrl}
                     alt={property.title}
                     className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                 />

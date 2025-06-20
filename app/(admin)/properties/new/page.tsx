@@ -136,7 +136,7 @@ export default function NewPropertyPage() {
         setMediaFiles(prev => prev.filter((_, i) => i !== index));
         setFormData(prev => ({
             ...prev,
-            images: prev.media.filter((_, i) => i !== index)
+            images: prev.media?.filter((_, i) => i !== index)
         }));
     };
 
@@ -371,7 +371,7 @@ export default function NewPropertyPage() {
                                                         <div className="flex items-center gap-3">
                                                             <Avatar>
                                                                 <AvatarImage
-                                                                    src={owner.image || "/placeholder.svg"}
+                                                                    src={"/placeholder.svg"}
                                                                     alt={owner.firstName}/>
                                                                 <AvatarFallback>
                                                                     {owner.firstName
@@ -422,7 +422,7 @@ export default function NewPropertyPage() {
                                 <div className="flex items-center gap-4">
                                     <Avatar>
                                         <AvatarImage
-                                            src={selectedOwner.image || "/placeholder.svg"}
+                                            src={"/placeholder.svg"}
                                             alt={selectedOwner.firstName}/>
                                         <AvatarFallback>
                                             {selectedOwner.firstName

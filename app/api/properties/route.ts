@@ -42,20 +42,15 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
-        select: {
-            id: true,
-            title: true,
-            propertyType: true,
-            status: true,
-            address: true,
-            currency: true,
-            price: true,
-            description: true,
+        include: {
             media: {
                 select: {
                     id: true,
                     url: true,
                     type: true,
+                    publicId: true,
+                    createdAt: true,
+                    propertyId: true,
                 },
             },
         },
@@ -126,7 +121,7 @@ export async function POST(request: Request) {
         const mediaFiles = formData.getAll('media') as File[];
 
         // Upload media to Cloudinary (if any)
-        const uploadedMedia = [];
+        const uploadedMedia: { url: string; publicId: string; type: string; }[] = [];
         if (mediaFiles.length > 0) {
             const uploadPromises = mediaFiles.map(async (file) => {
                 try {
