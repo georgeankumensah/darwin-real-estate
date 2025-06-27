@@ -30,6 +30,7 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
 import {cn} from "@/lib/utils"
 import {format} from "date-fns"
 import {useCreateCustomer} from "@/hooks/api/customers/useCreateCustomer"
+import {toast} from "@/hooks/use-toast";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {createTenantInput} from "@/lib/validators/tenant.validation";
 
@@ -58,7 +59,7 @@ export default function AddTenantForm() {
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
         if (
             form.firstName &&
             form.lastName &&
@@ -67,23 +68,35 @@ export default function AddTenantForm() {
             form.startDate &&
             propertyId
         ) {
-            const payload = {...form, propertyId}
-            createTenant(payload)
-            setForm({
-                firstName: "",
-                lastName: "",
-                email: "",
-                phoneNumber: "",
-                startDate: new Date(),
-                endDate: new Date(),
-                status: "ACTIVE",
-                propertyId,
-                floorNumber: "",
-                roomNumber: ""
-            })
-            setIsOpen(false)
+            const payload = { ...form, propertyId };
+            try {
+                await createTenant(payload);
+                toast({
+                    variant: "success",
+                    title: "Tenant added successfully",
+                });
+                setForm({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    phoneNumber: "",
+                    startDate: new Date(),
+                    endDate: new Date(),
+                    status: "ACTIVE",
+                    propertyId,
+                    floorNumber: "",
+                    roomNumber: "",
+                });
+                setIsOpen(false);
+            } catch (error: any) {
+                toast({
+                    variant: "destructive",
+                    title: "Error adding tenant",
+                    description: error.message,
+                });
+            }
         }
-    }
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>

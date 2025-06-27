@@ -65,12 +65,25 @@ export default function NewPropertyPage() {
 
     // Separate state for media files
     const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+    const [isOwnerPopoverOpen, setIsOwnerPopoverOpen] = useState(false);
+    const [previewUrls, setPreviewUrls] = useState<{[key: number]: string}>({});
 
     const {data: ownersData, isLoading: isLoadingOwners} = useAllOwners();
     const owners = ownersData?.owners || [];
 
     // Get selected owner
     const selectedOwner = owners.find((o) => o.id === formData.ownerId);
+
+    // Clean up preview URLs on unmount
+    useEffect(() => {
+        return () => {
+            Object.values(previewUrls).forEach(url => {
+                if (url.startsWith('blob:')) {
+                    URL.revokeObjectURL(url);
+                }
+            });
+        };
+    }, [previewUrls]);
 
     // Check for saved form state on component mount
     useEffect(() => {
@@ -103,7 +116,10 @@ export default function NewPropertyPage() {
         const files = Array.from(e.target.files || []);
 
         // Validate file types and sizes
-        const validFiles = files.filter(file => {
+        const validFiles: File[] = [];
+        const invalidFiles: string[] = [];
+
+        files.forEach(file => {
             const isValidImage = file.type.startsWith('image/') &&
                 ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
             const isValidVideo = file.type.startsWith('video/') &&
@@ -111,43 +127,83 @@ export default function NewPropertyPage() {
             const isValidSize = file.size <= 100 * 1024 * 1024; // 100MB limit
 
             if (!isValidImage && !isValidVideo) {
-
-                return false;
+                invalidFiles.push(`${file.name} - Invalid file type`);
+                return;
             }
 
             if (!isValidSize) {
-
-                return false;
+                invalidFiles.push(`${file.name} - File too large (max 100MB)`);
+                return;
             }
 
-            return true;
+            validFiles.push(file);
         });
 
+        // Show toast for invalid files
+        if (invalidFiles.length > 0) {
+            toast({
+                variant: "destructive",
+                title: "Some files were not added",
+                description: invalidFiles.join(', ')
+            });
+        }
+
+        // Create preview URLs for valid image files
+        const newPreviewUrls: {[key: number]: string} = {};
+        validFiles.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const currentIndex = mediaFiles.length + index;
+                newPreviewUrls[currentIndex] = URL.createObjectURL(file);
+            }
+        });
+
+        setPreviewUrls(prev => ({...prev, ...newPreviewUrls}));
         setMediaFiles(prev => [...prev, ...validFiles]);
 
-        // Update formData for backward compatibility
+        // Update formData
         setFormData(prev => ({
             ...prev,
             media: [...(prev.media || []), ...validFiles]
         }));
+
+        // Clear the input
+        e.target.value = '';
     };
 
     const removeMediaFile = (index: number) => {
+        // Clean up preview URL
+        if (previewUrls[index]) {
+            URL.revokeObjectURL(previewUrls[index]);
+            setPreviewUrls(prev => {
+                const updated = {...prev};
+                delete updated[index];
+
+                // Reindex remaining URLs
+                const reindexed: {[key: number]: string} = {};
+                Object.entries(updated).forEach(([key, value]) => {
+                    const oldIndex = parseInt(key);
+                    const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
+                    reindexed[newIndex] = value;
+                });
+
+                return reindexed;
+            });
+        }
+
         setMediaFiles(prev => prev.filter((_, i) => i !== index));
         setFormData(prev => ({
             ...prev,
-            images: prev.media?.filter((_, i) => i !== index)
+            media: prev.media?.filter((_, i) => i !== index) || []
         }));
     };
 
-    const isVideo = (filename: string): boolean => {
-        const videoExtensions = ['.mp4', '.mov', '.avi', '.wmv', '.webm'];
-        return videoExtensions.some(ext => filename.toLowerCase().endsWith(ext));
+    const isVideo = (file: File): boolean => {
+        return file.type.startsWith('video/');
     };
 
-    const getFilePreview = (file: File): string | null => {
+    const getFilePreview = (file: File, index: number): string | null => {
         if (file.type.startsWith('image/')) {
-            return URL.createObjectURL(file);
+            return previewUrls[index] || null;
         }
         return null;
     };
@@ -160,37 +216,98 @@ export default function NewPropertyPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    const {mutate: createProperty, isPending} = useCreateProperty()
+    const {mutate: createProperty, isPending} = useCreateProperty();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Validation
-        if (!formData.title || !formData.description || !formData.propertyType ||
-            !formData.currency || !formData.address || formData.price <= 0) {
-
+        if (!formData.title.trim()) {
+            toast({
+                variant: "destructive",
+                title: "Validation Error",
+                description: "Property title is required"
+            });
             return;
         }
 
-        const submitData = {
+        if (!formData.description.trim()) {
+            toast({
+                variant: "destructive",
+                title: "Validation Error",
+                description: "Property description is required"
+            });
+            return;
+        }
+
+        if (!formData.propertyType) {
+            toast({
+                variant: "destructive",
+                title: "Validation Error",
+                description: "Property type is required"
+            });
+            return;
+        }
+
+        if (!formData.address.trim()) {
+            toast({
+                variant: "destructive",
+                title: "Validation Error",
+                description: "Property address is required"
+            });
+            return;
+        }
+
+        if (formData.price <= 0) {
+            toast({
+                variant: "destructive",
+                title: "Validation Error",
+                description: "Property price must be greater than 0"
+            });
+            return;
+        }
+
+        const submitData: CreatePropertyInput = {
             ...formData,
+            title: formData.title.trim(),
+            description: formData.description.trim(),
+            address: formData.address.trim(),
             price: Number(formData.price),
             bedrooms: Number(formData.bedrooms),
             bathrooms: Number(formData.bathrooms),
             area: Number(formData.area),
             yearBuilt: Number(formData.yearBuilt),
             ownerId: formData.ownerId || undefined,
-            media: mediaFiles // Use 'media' to match backend expectations
+            media: mediaFiles
         };
 
-        try {
-            await createProperty(submitData);
-            // Success handling is done in the hook
-            router.push('/properties');
-        } catch (error) {
-            // Error handling is done in the hook
-            console.error('Form submission error:', error);
-        }
+        createProperty(submitData, {
+            onSuccess: () => {
+                toast({
+                    variant: "success",
+                    title: "Property created successfully",
+                });
+                // Clean up preview URLs
+                Object.values(previewUrls).forEach(url => {
+                    if (url.startsWith('blob:')) {
+                        URL.revokeObjectURL(url);
+                    }
+                });
+                router.push('/properties');
+            },
+            onError: (error) => {
+                toast({
+                    variant: "destructive",
+                    title: "Error creating property",
+                    description: error.message,
+                });
+            }
+        });
+    };
+
+    const handleOwnerSelect = (ownerId: string) => {
+        handleInputChange('ownerId', ownerId);
+        setIsOwnerPopoverOpen(false);
     };
 
     return (
@@ -259,8 +376,9 @@ export default function NewPropertyPage() {
                                     id="price"
                                     type="number"
                                     min="0"
+                                    step="0.01"
                                     placeholder="Enter price"
-                                    value={formData.price}
+                                    value={formData.price || ''}
                                     onChange={(e) => handleInputChange('price', e.target.value)}
                                     required
                                 />
@@ -287,7 +405,7 @@ export default function NewPropertyPage() {
                                     type="number"
                                     min="0"
                                     placeholder="Number of bedrooms"
-                                    value={formData.bedrooms}
+                                    value={formData.bedrooms || ''}
                                     onChange={(e) => handleInputChange('bedrooms', e.target.value)}
                                 />
                             </div>
@@ -297,8 +415,9 @@ export default function NewPropertyPage() {
                                     id="bathrooms"
                                     type="number"
                                     min="0"
+                                    step="0.5"
                                     placeholder="Number of bathrooms"
-                                    value={formData.bathrooms}
+                                    value={formData.bathrooms || ''}
                                     onChange={(e) => handleInputChange('bathrooms', e.target.value)}
                                 />
                             </div>
@@ -309,7 +428,7 @@ export default function NewPropertyPage() {
                                     type="number"
                                     min="0"
                                     placeholder="Property area"
-                                    value={formData.area}
+                                    value={formData.area || ''}
                                     onChange={(e) => handleInputChange('area', e.target.value)}
                                 />
                             </div>
@@ -321,7 +440,7 @@ export default function NewPropertyPage() {
                                     min="1800"
                                     max={new Date().getFullYear()}
                                     placeholder="Year built"
-                                    value={formData.yearBuilt}
+                                    value={formData.yearBuilt || ''}
                                     onChange={(e) => handleInputChange('yearBuilt', e.target.value)}
                                 />
                             </div>
@@ -340,18 +459,21 @@ export default function NewPropertyPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="owner">Owner (Optional)</Label>
-                            <Popover>
+                            <Popover open={isOwnerPopoverOpen} onOpenChange={setIsOwnerPopoverOpen}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
                                         role="combobox"
+                                        aria-expanded={isOwnerPopoverOpen}
                                         className={cn("w-full justify-between", !formData.ownerId && "text-muted-foreground")}
+                                        disabled={isLoadingOwners}
                                     >
-                                        {formData.ownerId
-                                            ? owners.find((owner) => owner.id === formData.ownerId)?.firstName + " " + owners.find((owner) => owner.id === formData.ownerId)?.lastName
-                                            : "Select owner"}
-                                        <ChevronsUpDown
-                                            className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
+                                        {formData.ownerId && selectedOwner
+                                            ? `${selectedOwner.firstName} ${selectedOwner.lastName}`
+                                            : isLoadingOwners
+                                                ? "Loading owners..."
+                                                : "Select owner"}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[400px] p-0">
@@ -363,10 +485,8 @@ export default function NewPropertyPage() {
                                                 {owners.map((owner) => (
                                                     <CommandItem
                                                         key={owner.id}
-                                                        value={owner.firstName}
-                                                        onSelect={() => {
-                                                            handleInputChange('ownerId', owner.id)
-                                                        }}
+                                                        value={`${owner.firstName} ${owner.lastName}`}
+                                                        onSelect={() => handleOwnerSelect(owner.id)}
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <Avatar>
@@ -374,10 +494,7 @@ export default function NewPropertyPage() {
                                                                     src={"/placeholder.svg"}
                                                                     alt={owner.firstName}/>
                                                                 <AvatarFallback>
-                                                                    {owner.firstName
-                                                                        .split(" ")
-                                                                        .map((n) => n[0])
-                                                                        .join("")}
+                                                                    {owner.firstName[0]}{owner.lastName?.[0] || ''}
                                                                 </AvatarFallback>
                                                             </Avatar>
                                                             <div>
@@ -418,17 +535,14 @@ export default function NewPropertyPage() {
                         </div>
 
                         {selectedOwner && (
-                            <div className="mt-4 p-4 border rounded-md">
+                            <div className="mt-4 p-4 border rounded-md bg-muted/20">
                                 <div className="flex items-center gap-4">
                                     <Avatar>
                                         <AvatarImage
                                             src={"/placeholder.svg"}
                                             alt={selectedOwner.firstName}/>
                                         <AvatarFallback>
-                                            {selectedOwner.firstName
-                                                .split(" ")
-                                                .map((n) => n[0])
-                                                .join("")}
+                                            {selectedOwner.firstName[0]}{selectedOwner.lastName?.[0] || ''}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div>
@@ -443,13 +557,14 @@ export default function NewPropertyPage() {
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description">Description *</Label>
                             <Textarea
                                 id="description"
                                 placeholder="Enter property description"
                                 rows={5}
                                 value={formData.description}
                                 onChange={(e) => handleInputChange('description', e.target.value)}
+                                required
                             />
                         </div>
 
@@ -463,8 +578,8 @@ export default function NewPropertyPage() {
                                     <h4 className="text-sm font-medium">Selected Files ({mediaFiles.length} items)</h4>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                                         {mediaFiles.map((file, index) => (
-                                            <div key={index} className="relative group border-2 border-gray-200 rounded-lg overflow-hidden">
-                                                {isVideo(file.name) ? (
+                                            <div key={`${file.name}-${index}`} className="relative group border-2 border-gray-200 rounded-lg overflow-hidden">
+                                                {isVideo(file) ? (
                                                     <div className="w-full h-32 bg-gray-100 flex flex-col items-center justify-center">
                                                         <Video className="h-8 w-8 text-gray-400 mb-1"/>
                                                         <span className="text-xs text-gray-500">
@@ -473,7 +588,7 @@ export default function NewPropertyPage() {
                                                     </div>
                                                 ) : (
                                                     <Image
-                                                        src={getFilePreview(file) || "/placeholder.svg"}
+                                                        src={getFilePreview(file, index) || "/placeholder.svg"}
                                                         alt={file.name}
                                                         width={300}
                                                         height={200}
@@ -497,8 +612,8 @@ export default function NewPropertyPage() {
 
                                                 {/* File type indicator */}
                                                 <div className="absolute top-2 left-2">
-                                                    <Badge variant={isVideo(file.name) ? "default" : "secondary"} className="text-xs">
-                                                        {isVideo(file.name) ? "VIDEO" : "IMAGE"}
+                                                    <Badge variant={isVideo(file) ? "default" : "secondary"} className="text-xs">
+                                                        {isVideo(file) ? "VIDEO" : "IMAGE"}
                                                     </Badge>
                                                 </div>
                                             </div>

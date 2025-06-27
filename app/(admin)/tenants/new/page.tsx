@@ -12,6 +12,7 @@ import React, {useState} from "react";
 import { useCreateCustomer } from "@/hooks/api/customers/useCreateCustomer"
 import {$Enums} from "@/app/generated/prisma";
 import UserStatus = $Enums.UserStatus;
+import {toast} from "@/hooks/use-toast";
 
 export default function NewTenantPage() {
   const router = useRouter();
@@ -48,18 +49,30 @@ export default function NewTenantPage() {
       status: UserStatus.ACTIVE
     }
 
-    await createTenant(submitData)
+    try {
+      await createTenant(submitData);
+      toast({
+        variant: "success",
+        title: "Tenant created successfully",
+      });
 
-    // Check if we came from the transaction form
-    const transactionFormState = localStorage.getItem('transactionFormState')
-    const transactionFormStep = localStorage.getItem('transactionFormStep')
+      // Check if we came from the transaction form
+      const transactionFormState = localStorage.getItem('transactionFormState');
+      const transactionFormStep = localStorage.getItem('transactionFormStep');
 
-    if (transactionFormState && transactionFormStep) {
-      // Redirect back to the transaction form
-      router.push('/transactions/new')
-    } else {
-      // Normal flow - redirect to tenants list
-      router.push('/tenants')
+      if (transactionFormState && transactionFormStep) {
+        // Redirect back to the transaction form
+        router.push('/transactions/new');
+      } else {
+        // Normal flow - redirect to tenants list
+        router.push('/tenants');
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error creating tenant",
+        description: error.message,
+      });
     }
   }
 

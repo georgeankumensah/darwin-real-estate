@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
     } catch (error) {
         console.error("POST /owners error:", error);
-        return new Response(JSON.stringify({error: "Failed to create user"}), {
+        return new Response(JSON.stringify({error: "Failed to create owner"}), {
             status: 500,
             headers: {'Content-Type': 'application/json'},
         });

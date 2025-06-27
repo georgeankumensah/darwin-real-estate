@@ -28,6 +28,7 @@ import {UpdatePropertyInput} from "@/lib/validators/property.validation";
 import {usePropertyById} from "@/hooks/api/properties/usePropertyById";
 import {LoadingIndicator} from "@/components/ui/loading-indicator";
 import { Media } from "@/app/generated/prisma";
+import {toast} from "@/hooks/use-toast";
 
 export default function EditPropertyPage() {
     const router = useRouter();
@@ -116,8 +117,22 @@ export default function EditPropertyPage() {
                 removeMedia: mediaPublicIdsToDelete // Use 'removeMedia' to match the updated schema
             };
 
-            await updateProperty(updateData);
-            router.push(`/properties/${propertyId}`);
+            updateProperty(updateData, {
+                onSuccess: () => {
+                    toast({
+                        variant: "success",
+                        title: "Property updated successfully",
+                    });
+                    router.push(`/properties/${propertyId}`);
+                },
+                onError: (error) => {
+                    toast({
+                        variant: "destructive",
+                        title: "Error updating property",
+                        description: error.message,
+                    });
+                }
+            });
         } catch (error) {
             console.error('Error updating property:', error);
             // You might want to show a toast notification here

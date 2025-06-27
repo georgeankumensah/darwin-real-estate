@@ -6,77 +6,84 @@ import TransactionStatus = $Enums.TransactionStatus;
 import PaymentMethod = $Enums.PaymentMethod;
 
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
+    try {
+        const { searchParams } = new URL(request.url);
 
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const skip = (page - 1) * limit;
+        const page = parseInt(searchParams.get("page") || "1", 10);
+        const limit = parseInt(searchParams.get("limit") || "10", 10);
+        const skip = (page - 1) * limit;
 
-    const search = searchParams.get("search")?.trim() || "";
-    const status = searchParams.get("status")?.toUpperCase() || "";
+        const search = searchParams.get("search")?.trim() || "";
+        const status = searchParams.get("status")?.toUpperCase() || "";
 
-    const where: any = {};
+        const where: any = {};
 
-    if (search) {
-        where.OR = [
-            { refNumber: { contains: search, mode: "insensitive" } },
-            { description: { contains: search, mode: "insensitive" } },
-            { customerFirstName: { contains: search, mode: "insensitive" } },
-            { customerLastName: { contains: search, mode: "insensitive" } },
-            { customerEmail: { contains: search, mode: "insensitive" } },
-            { propertyTitle: { contains: search, mode: "insensitive" } },
-            { propertyAddress: { contains: search, mode: "insensitive" } },
-        ];
-    }
+        if (search) {
+            where.OR = [
+                { refNumber: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } },
+                { customerFirstName: { contains: search, mode: "insensitive" } },
+                { customerLastName: { contains: search, mode: "insensitive" } },
+                { customerEmail: { contains: search, mode: "insensitive" } },
+                { propertyTitle: { contains: search, mode: "insensitive" } },
+                { propertyAddress: { contains: search, mode: "insensitive" } },
+            ];
+        }
 
-    if (status) {
-        where.status = status;
-    }
+        if (status) {
+            where.status = status;
+        }
 
-    const total = await prisma.transaction.count({ where });
+        const total = await prisma.transaction.count({ where });
 
-    const transactions = await prisma.transaction.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { transactionDate: "desc" },
-        select: {
-            id: true,
-            transactionType: true,
-            amount: true,
-            transactionDate: true,
-            status: true,
-            refNumber: true,
-            customerFirstName: true,
-            customerLastName: true,
-            customerEmail: true,
-            customerPhoneNumber: true,
-            customerStartDate: true,
-            customerEndDate: true,
-            propertyTitle: true,
-            propertyAddress: true,
-            property: {
-                select: {
-                    media: true,
-                    title: true,
-                    address: true,
+        const transactions = await prisma.transaction.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: { transactionDate: "desc" },
+            select: {
+                id: true,
+                transactionType: true,
+                amount: true,
+                transactionDate: true,
+                status: true,
+                refNumber: true,
+                customerFirstName: true,
+                customerLastName: true,
+                customerEmail: true,
+                customerPhoneNumber: true,
+                customerStartDate: true,
+                customerEndDate: true,
+                propertyTitle: true,
+                propertyAddress: true,
+                property: {
+                    select: {
+                        media: true,
+                        title: true,
+                        address: true,
+                    },
                 },
             },
-        },
-    });
+        });
 
-    return new Response(JSON.stringify({
-        transactions,
-        pagination: {
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        },
-    }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-    });
+        return new Response(JSON.stringify({
+            transactions,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    } catch (error) {
+        console.error("GET /transactions error:", error);
+        return new Response(JSON.stringify({ error: "Failed to fetch transactions" }), {
+            status: 500,
+        });
+    }
 }
 
 export async function POST(request: Request) {

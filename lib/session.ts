@@ -1,7 +1,7 @@
 import 'server-only'
 import {SignJWT, jwtVerify} from 'jose'
 import {cookies} from 'next/headers'
-import {SessionPayload} from '@/app/lib/definitions'
+import {SessionPayload} from '@/lib/definitions'
 
 const secretKey = process.env.SESSION_SECRET
 if (!secretKey) throw new Error('SESSION_SECRET environment variable is not set')

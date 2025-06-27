@@ -33,12 +33,13 @@ import {useForm} from "react-hook-form"
 import {useCreateTransaction} from "@/hooks/api/transactions/useCreateTransaction";
 import {CreateTransactionSchema, createTransactionType} from "@/lib/validators/transaction.validation";
 import {useAllProperties} from "@/hooks/api/properties/useAllProperties"
+import {toast} from "@/hooks/use-toast";
 
 export default function NewTransactionForm() {
     const [step, setStep] = useState(1);
     const router = useRouter();
 
-    const {mutateAsync: createTransaction, isPending} = useCreateTransaction()
+    const {mutate: createTransaction, isPending} = useCreateTransaction()
     const {data: propertiesData, isLoading: isLoadingProperties} = useAllProperties();
 
     const properties = propertiesData?.properties || [];
@@ -100,9 +101,23 @@ export default function NewTransactionForm() {
     }, [form, setStep]);
 
     // Handle form submission
-    const onSubmit = async (values: createTransactionType) => {
-        await createTransaction(values)
-        router.push("/transactions")
+    const onSubmit = (values: createTransactionType) => {
+        createTransaction(values, {
+            onSuccess: () => {
+                toast({
+                    variant: "success",
+                    title: "Transaction created successfully",
+                });
+                router.push("/transactions");
+            },
+            onError: (error: any) => {
+                toast({
+                    variant: "destructive",
+                    title: "Error creating transaction",
+                    description: error.message,
+                });
+            },
+        });
     }
 
     // Navigate between steps

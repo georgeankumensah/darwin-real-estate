@@ -2,10 +2,21 @@
 import {Eye, EyeOff} from "lucide-react";
 import React, {useActionState} from "react";
 import {login} from "@/app/actions/login";
+import {toast} from "@/hooks/use-toast";
 
 const Login = () => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [state, action, pending] = useActionState(login, undefined);
+
+    React.useEffect(() => {
+        if (state?.message) {
+            toast({
+                variant: "destructive",
+                title: "Login Error",
+                description: state.message,
+            });
+        }
+    }, [state]);
     return (
         <section>
             <div className="isolate -z-10 absolute h-full w-full top-0 left-0 bg-primary-2700"></div>

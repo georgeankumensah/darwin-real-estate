@@ -1,27 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import {Plus, Filter, X} from "lucide-react";
+import {Plus, Filter, X, ChevronLeft, ChevronRight} from "lucide-react";
 import {useState} from "react";
 import {useAllProperties} from "@/hooks/api/properties/useAllProperties";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {usePropertyFilters} from "@/hooks/filters/usePropertyFilters";
 import {FilterPanel, FilterState, initialFilters} from "@/components/ui/filters-panel";
 import {clearSpecificFilter, getActiveFilterBadges, getActiveFiltersCount} from "@/lib/utils/filterBadges";
-import {PropertyCard, PropertyCardSkeleton} from "@/components/ui/property-card";
+import {PropertyCard} from "@/components/ui/property-card";
+import {PropertyCardSkeleton} from "@/components/ui/skeletons/PropertyCardSkeleton";
 
 export default function PropertiesPage() {
-    const {data, isLoading, isError} = useAllProperties();
     const [filters, setFilters] = useState<FilterState>(initialFilters);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    const properties = data?.properties || [];
-    const {filteredProperties} = usePropertyFilters(properties, filters);
+    // Create pagination filters object
+    const paginationFilters = {
+        ...filters,
+        minPrice: filters.minPrice ? Number.parseFloat(filters.minPrice) : undefined,
+        maxPrice: filters.maxPrice ? Number.parseFloat(filters.maxPrice) : undefined,
+        minArea: filters.minArea ? Number.parseInt(filters.minArea) : undefined,
+        maxArea: filters.maxArea ? Number.parseInt(filters.maxArea) : undefined,
+        minYear: filters.minYear ? Number.parseInt(filters.minYear) : undefined,
+        maxYear: filters.maxYear ? Number.parseInt(filters.maxYear) : undefined,
+        bedrooms: filters.bedrooms ? Number.parseInt(filters.bedrooms) : undefined,
+        bathrooms: filters.bathrooms ? Number.parseInt(filters.bathrooms) : undefined,
+        page: currentPage,
+        limit: itemsPerPage,
+    };
 
+    const {data, isLoading, isError} = useAllProperties(paginationFilters);
     const resetFilters = () => {
         setFilters(initialFilters);
+        setCurrentPage(1); // Reset to first page when filters are cleared
+    };
+
+    const goToPage = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handleItemsPerPageChange = (value: string) => {
+        setItemsPerPage(Number.parseInt(value));
+        setCurrentPage(1); // Reset to first page when items per page changes
     };
 
     const activeFiltersCount = getActiveFiltersCount(filters);
@@ -29,6 +55,7 @@ export default function PropertiesPage() {
 
     const handleClearSpecificFilter = (key: string) => {
         setFilters(clearSpecificFilter(filters, key));
+        setCurrentPage(1); // Reset to first page when a filter is cleared
     };
 
     if (isError) {
@@ -38,6 +65,9 @@ export default function PropertiesPage() {
             </div>
         );
     }
+
+    const properties = data?.properties || [];
+    const pagination = data?.pagination;
 
     return (
         <div className="p-6 space-y-4">
@@ -112,7 +142,7 @@ export default function PropertiesPage() {
             {/* Results count */}
             <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                    {isLoading ? "Loading..." : `${filteredProperties.length} properties found`}
+                    {isLoading ? "Loading..." : `${pagination?.total || 0} properties found`}
                 </p>
             </div>
 
@@ -123,9 +153,9 @@ export default function PropertiesPage() {
                     Array(8).fill(0).map((_, index) => (
                         <PropertyCardSkeleton key={index}/>
                     ))
-                ) : filteredProperties.length > 0 ? (
+                ) : properties.length > 0 ? (
                     // Property cards
-                    filteredProperties.map((property) => (
+                    properties.map((property) => (
                         <PropertyCard key={property.id} property={property}/>
                     ))
                 ) : (
@@ -142,6 +172,90 @@ export default function PropertiesPage() {
                     </div>
                 )}
             </div>
+
+            {/* Pagination */}
+            {!isLoading && pagination && (
+                <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center gap-2">
+                        <Select
+                            value={itemsPerPage.toString()}
+                            onValueChange={handleItemsPerPageChange}
+                        >
+                            <SelectTrigger className="w-[100px]">
+                                <SelectValue placeholder="Per page" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="5">5 per page</SelectItem>
+                                <SelectItem value="10">10 per page</SelectItem>
+                                <SelectItem value="20">20 per page</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span className="text-sm text-muted-foreground">
+                            Showing{" "}
+                            {pagination.page === 1
+                                ? 1
+                                : (pagination.page - 1) * itemsPerPage + 1}
+                            -
+                            {Math.min(
+                                pagination.page * itemsPerPage,
+                                pagination.total
+                            )}{" "}
+                            of {pagination.total}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => goToPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+
+                        {Array.from(
+                            { length: Math.min(pagination.totalPages, 5) },
+                            (_, i) => {
+                                // Show pages around current page
+                                let pageNum = i + 1;
+                                if (pagination.totalPages > 5) {
+                                    if (currentPage > 3) {
+                                        pageNum = currentPage - 3 + i;
+                                    }
+                                    if (currentPage > pagination.totalPages - 2) {
+                                        pageNum = pagination.totalPages - 4 + i;
+                                    }
+                                }
+
+                                return (
+                                    <Button
+                                        key={pageNum}
+                                        variant={currentPage === pageNum ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => goToPage(pageNum)}
+                                        className="w-8 h-8"
+                                    >
+                                        {pageNum}
+                                    </Button>
+                                );
+                            }
+                        )}
+
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => goToPage(currentPage + 1)}
+                            disabled={
+                                currentPage === pagination.totalPages ||
+                                pagination.totalPages === 0
+                            }
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

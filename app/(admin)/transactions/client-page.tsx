@@ -5,6 +5,8 @@ import {
     Search,
     SlidersHorizontal,
     X,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import {Badge} from "@/components/ui/badge";
@@ -46,6 +48,8 @@ import {useAllTransactions} from "@/hooks/api/transactions/useAllTransactions";
 import {Skeleton} from "@/components/ui/skeleton";
 import {useTransactionFilters} from "@/hooks/filters/useTransactionFilters";
 import {generateAndDownloadCsv} from "@/lib/helpers/generateCsv";
+import {useState} from "react";
+import { TransactionRowSkeleton } from "@/components/ui/skeletons/TransactionRowSkeleton";
 
 type Filter = {
     type: string;
@@ -54,8 +58,15 @@ type Filter = {
 };
 
 export default function TransactionsClientPage() {
-    const { data, isLoading } = useAllTransactions();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    
+    const { data, isLoading } = useAllTransactions({
+        page: currentPage,
+        limit: itemsPerPage,
+    });
     const transactions = data?.transactions || [];
+    const pagination = data?.pagination
 
     const {
         searchQuery,
@@ -68,7 +79,6 @@ export default function TransactionsClientPage() {
         clearAllFilters,
         removeFilter,
         filteredTransactions,
-        // stats,
     } = useTransactionFilters(transactions);
 
     const handleExport = () => {
@@ -89,77 +99,18 @@ export default function TransactionsClientPage() {
             ],
         });
     };
+    
+    const goToPage = (page: number) => {
+        setCurrentPage(page);
+    };
 
-    // const {
-    //     total: totalTransactions,
-    //     completed: completedTransactions,
-    //     pending: pendingTransactions,
-    //     failed: failedTransactions,
-    //     volume: totalAmount,
-    // } = stats;
+    const handleItemsPerPageChange = (value: string) => {
+        setItemsPerPage(Number.parseInt(value));
+        setCurrentPage(1); // Reset to first page when items per page changes
+    };
 
     return (
         <div className="p-6 space-y-6">
-            {/*<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">*/}
-            {/*    <Card>*/}
-            {/*        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">*/}
-            {/*            <CardTitle className="text-sm font-medium">*/}
-            {/*                Total Transactions*/}
-            {/*            </CardTitle>*/}
-            {/*            <CreditCard className="h-4 w-4 text-muted-foreground"/>*/}
-            {/*        </CardHeader>*/}
-            {/*        <CardContent>*/}
-            {/*            <div className="text-2xl font-bold">{totalTransactions}</div>*/}
-            {/*            <p className="text-xs text-muted-foreground">*/}
-            {/*                {completedTransactions} completed, {pendingTransactions} pending,{" "}*/}
-            {/*                {failedTransactions} failed*/}
-            {/*            </p>*/}
-            {/*        </CardContent>*/}
-            {/*    </Card>*/}
-            {/*    <Card>*/}
-            {/*        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">*/}
-            {/*            <CardTitle className="text-sm font-medium">Total Volume</CardTitle>*/}
-            {/*            <CreditCard className="h-4 w-4 text-muted-foreground"/>*/}
-            {/*        </CardHeader>*/}
-            {/*        <CardContent>*/}
-            {/*            <div className="text-2xl font-bold">*/}
-            {/*                ${(totalAmount / 1000000).toFixed(2)}M*/}
-            {/*            </div>*/}
-            {/*            <p className="text-xs text-muted-foreground">*/}
-            {/*                Avg. ${(totalAmount / totalTransactions / 1000).toFixed(1)}K per*/}
-            {/*                transaction*/}
-            {/*            </p>*/}
-            {/*        </CardContent>*/}
-            {/*    </Card>*/}
-            {/*    <Card>*/}
-            {/*        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">*/}
-            {/*            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>*/}
-            {/*            <CreditCard className="h-4 w-4 text-muted-foreground"/>*/}
-            {/*        </CardHeader>*/}
-            {/*        <CardContent>*/}
-            {/*            <div className="text-2xl font-bold">*/}
-            {/*                {totalTransactions > 0*/}
-            {/*                    ? ((completedTransactions / totalTransactions) * 100).toFixed(1)*/}
-            {/*                    : 0}*/}
-            {/*                %*/}
-            {/*            </div>*/}
-            {/*            <p className="text-xs text-muted-foreground">*/}
-            {/*                {completedTransactions} of {totalTransactions} transactions*/}
-            {/*                successful*/}
-            {/*            </p>*/}
-            {/*        </CardContent>*/}
-            {/*    </Card>*/}
-            {/*    <Card>*/}
-            {/*        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">*/}
-            {/*            <CardTitle className="text-sm font-medium">Date Range</CardTitle>*/}
-            {/*            <Calendar className="h-4 w-4 text-muted-foreground"/>*/}
-            {/*        </CardHeader>*/}
-            {/*        <CardContent>*/}
-            {/*            <DatePickerWithRange className="w-full"/>*/}
-            {/*        </CardContent>*/}
-            {/*    </Card>*/}
-            {/*</div>*/}
-
             <Card>
                 <CardHeader className="pb-3">
                     <CardTitle>Transaction History</CardTitle>
@@ -325,27 +276,7 @@ export default function TransactionsClientPage() {
                             <TableBody>
                                 {isLoading ? (
                                     Array(5).fill(0).map((_, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Skeleton className="h-10 w-10 rounded-full"/>
-                                                    <div>
-                                                        <Skeleton className="h-5 w-32 mb-1"/>
-                                                        <Skeleton className="h-4 w-40"/>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Skeleton className="h-4 w-32 mb-1"/>
-                                                <Skeleton className="h-4 w-24"/>
-                                            </TableCell>
-                                            <TableCell><Skeleton className="h-4 w-40"/></TableCell>
-                                            <TableCell><Skeleton className="h-4 w-24"/></TableCell>
-                                            <TableCell><Skeleton className="h-6 w-20"/></TableCell>
-                                            <TableCell className="text-right">
-                                                <Skeleton className="h-8 w-20 ml-auto"/>
-                                            </TableCell>
-                                        </TableRow>
+                                        <TransactionRowSkeleton key={index}/>
                                     ))
                                 ) : filteredTransactions.length > 0 ? (
                                     filteredTransactions.map((transaction) => (
@@ -439,6 +370,90 @@ export default function TransactionsClientPage() {
                                 )}
                             </TableBody>
                         </Table>
+                        
+                        {/* Pagination */}
+                        {!isLoading && pagination && pagination.totalPages > 1 && (
+                            <div className="flex items-center justify-between mt-4">
+                                <div className="flex items-center gap-2">
+                                    <Select
+                                        value={itemsPerPage.toString()}
+                                        onValueChange={handleItemsPerPageChange}
+                                    >
+                                        <SelectTrigger className="w-[100px]">
+                                            <SelectValue placeholder="Per page" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="5">5 per page</SelectItem>
+                                            <SelectItem value="10">10 per page</SelectItem>
+                                            <SelectItem value="20">20 per page</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <span className="text-sm text-muted-foreground">
+                            Showing{" "}
+                                        {pagination.page === 1
+                                            ? 1
+                                            : (pagination.page - 1) * itemsPerPage + 1}
+                                        -
+                                        {Math.min(
+                                            pagination.page * itemsPerPage,
+                                            pagination.total
+                                        )}{" "}
+                                        of {pagination.total}
+                        </span>
+                                </div>
+
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => goToPage(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+
+                                    {Array.from(
+                                        { length: Math.min(pagination.totalPages, 5) },
+                                        (_, i) => {
+                                            // Show pages around current page
+                                            let pageNum = i + 1;
+                                            if (pagination.totalPages > 5) {
+                                                if (currentPage > 3) {
+                                                    pageNum = currentPage - 3 + i;
+                                                }
+                                                if (currentPage > pagination.totalPages - 2) {
+                                                    pageNum = pagination.totalPages - 4 + i;
+                                                }
+                                            }
+
+                                            return (
+                                                <Button
+                                                    key={pageNum}
+                                                    variant={currentPage === pageNum ? "default" : "outline"}
+                                                    size="icon"
+                                                    onClick={() => goToPage(pageNum)}
+                                                    className="w-8 h-8"
+                                                >
+                                                    {pageNum}
+                                                </Button>
+                                            );
+                                        }
+                                    )}
+
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => goToPage(currentPage + 1)}
+                                        disabled={
+                                            currentPage === pagination.totalPages ||
+                                            pagination.totalPages === 0
+                                        }
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

@@ -18,6 +18,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {Customer} from "@/app/generated/prisma"
+import {toast} from "@/hooks/use-toast";
 
 export default function TenantCard(tenant: Customer) {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -34,9 +35,23 @@ export default function TenantCard(tenant: Customer) {
     }
 
     const handleRemove = () => {
-        deleteTenant(tenant.id)
-        setIsDeleteDialogOpen(false)
-    }
+        deleteTenant(tenant.id, {
+            onSuccess: () => {
+                toast({
+                    variant: "success",
+                    title: "Tenant removed successfully",
+                });
+                setIsDeleteDialogOpen(false);
+            },
+            onError: (error) => {
+                toast({
+                    variant: "destructive",
+                    title: "Error removing tenant",
+                    description: error.message,
+                });
+            },
+        });
+    };
 
     return (
         <>

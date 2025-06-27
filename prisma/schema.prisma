@@ -30,14 +30,14 @@ model User {
 model Property {
   id           String         @id @default(cuid())
   title        String
-  description  String
+  description  String?
   propertyType String
   currency     String
   price        Float
   bedrooms     Int
   bathrooms    Int
-  area         Int
-  yearBuilt    Int
+  area         Int?
+  yearBuilt    Int?
   address      String
   features     String[]
   status       PropertyStatus @default(FOR_SALE)

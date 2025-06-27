@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt'
 import { redirect } from 'next/navigation'
-import { SignupFormSchema, LoginFormSchema, FormState } from '@/app/lib/definitions'
+import { SignupFormSchema, LoginFormSchema, FormState } from '@/lib/definitions'
 import { prisma } from '@/lib/prisma'
-import {createSession, deleteSession} from "@/app/lib/session";
+import {createSession, deleteSession} from "@/lib/session";
 
 export async function signup(state: FormState, formData: FormData) {
     // 1. Validate form fields

@@ -42,8 +42,13 @@ export async function GET(
         });
     } catch (error) {
         console.error('Error fetching owner:', error);
-        return new Response(JSON.stringify({error: 'Owner not found'}), {
-            status: 404,
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return new Response(JSON.stringify({ error: 'Owner not found' }), {
+                status: 404,
+            });
+        }
+        return new Response(JSON.stringify({ error: 'Failed to fetch owner' }), {
+            status: 500,
         });
     }
 }
@@ -62,8 +67,13 @@ export async function DELETE(
         return new Response(null, {status: 204});
     } catch (error) {
         console.error('Error deleting owner:', error);
-        return new Response(JSON.stringify({error: 'Owner not found'}), {
-            status: 404,
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return new Response(JSON.stringify({ error: 'Owner not found' }), {
+                status: 404,
+            });
+        }
+        return new Response(JSON.stringify({ error: 'Failed to delete owner' }), {
+            status: 500,
         });
     }
 }
@@ -98,8 +108,13 @@ export async function PATCH(
         });
     } catch (error) {
         console.error('Error updating owner:', error);
-        return new Response(JSON.stringify({error: 'Owner not found'}), {
-            status: 404,
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return new Response(JSON.stringify({ error: 'Owner not found' }), {
+                status: 404,
+            });
+        }
+        return new Response(JSON.stringify({ error: 'Failed to update owner' }), {
+            status: 500,
         });
     }
 }

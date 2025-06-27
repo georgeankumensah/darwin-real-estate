@@ -2,8 +2,8 @@ import {prisma} from "@/lib/prisma";
 import {uploadToCloudinary} from "@/lib/helpers/cloudinary";
 import {validateEnumValue} from "@/lib/helpers/validateEnum";
 import {$Enums} from "@/app/generated/prisma";
-import PropertyStatus = $Enums.PropertyStatus;
 import {NextRequest} from "next/server";
+import PropertyStatus = $Enums.PropertyStatus;
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
 
         // Create property with transaction for data consistency
         const property = await prisma.$transaction(async (tx) => {
-            const newProperty = await tx.property.create({
+            return tx.property.create({
                 data: {
                     title,
                     description,
@@ -189,8 +189,6 @@ export async function POST(request: Request) {
                     }
                 },
             });
-
-            return newProperty;
         });
 
         return new Response(JSON.stringify({
@@ -215,7 +213,7 @@ export async function POST(request: Request) {
         }
 
         return new Response(JSON.stringify({
-            error: "Internal server error occurred while creating property"
+            error: "Failed to create property"
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },

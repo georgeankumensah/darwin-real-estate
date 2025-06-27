@@ -1,13 +1,12 @@
 'use server'
 
-import {FormState, LoginFormSchema} from "@/app/lib/definitions";
+import {FormState, LoginFormSchema} from "@/lib/definitions";
 import {prisma} from "@/lib/prisma";
 import bcrypt from "bcrypt";
-import {createSession} from "@/app/lib/session";
+import {createSession} from "@/lib/session";
 import {redirect} from "next/navigation";
 
 export async function login(state: FormState, formData: FormData) {
-    console.log('in login')
     // 1. Validate form fields
     const validatedFields = LoginFormSchema.safeParse({
         email: formData.get('email'),
@@ -27,10 +26,9 @@ export async function login(state: FormState, formData: FormData) {
     })
 
     if (!user) {
-        console.log('user not found')
         return {
-            message: 'Invalid email or password.',
-        }
+            message: 'User not found',
+        };
     }
 
     // 3. Compare the user's password with the hashed password in the database

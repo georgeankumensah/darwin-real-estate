@@ -6,10 +6,21 @@ import TenantCard from "@/components/ui/tenant/tenant-card";
 import AddTenantForm from "@/components/ui/tenant/add-tenant-form";
 import {useCustomersByProperty} from "@/hooks/api/customers/useCustomersByProperty";
 import {Skeleton} from "@/components/ui/skeleton";
+import {toast} from "@/hooks/use-toast";
 
 export default function TenantManagement() {
     const {data, isLoading, isError} = useCustomersByProperty();
     const tenants = data ?? [];
+
+    React.useEffect(() => {
+        if (isError) {
+            toast({
+                variant: "destructive",
+                title: "Error loading tenants",
+                description: "Could not fetch tenant data. Please try again.",
+            });
+        }
+    }, [isError]);
 
     return (
         <Card className="h-full w-full">

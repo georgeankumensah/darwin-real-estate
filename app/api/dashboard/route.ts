@@ -67,6 +67,6 @@ export async function GET() {
         })
     } catch (error) {
         console.error('Dashboard API error:', error)
-        return new NextResponse('Internal Server Error', { status: 500 })
+        return new NextResponse(JSON.stringify({ error: "Failed to fetch dashboard data" }), { status: 500 })
     }
 }

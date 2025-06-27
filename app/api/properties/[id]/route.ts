@@ -37,7 +37,12 @@ export async function GET(
         });
     } catch (error) {
         console.error("GET /property/:id error:", error);
-        return new Response(JSON.stringify({error: 'Failed to fetch property'}), {
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return new Response(JSON.stringify({ error: 'Property not found' }), {
+                status: 404,
+            });
+        }
+        return new Response(JSON.stringify({ error: 'Failed to fetch property' }), {
             status: 500,
         });
     }

@@ -1,7 +1,7 @@
 "use client"
 
-import {useState} from "react"
-import {PlusCircle, Search, SlidersHorizontal, X} from "lucide-react"
+import {useState, useEffect} from "react"
+import {PlusCircle, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight} from "lucide-react"
 import Link from "next/link"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import {Badge} from "@/components/ui/badge"
@@ -21,48 +21,10 @@ import {
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {useAllOwners} from "@/hooks/api/owners/useAllOwners"
 import {useDebounce} from "@/hooks/useDebounce"
-import {Skeleton} from "@/components/ui/skeleton";
+import {OwnersTableSkeleton} from "@/components/ui/skeletons/OwnersTableSkeleton";
+import {toast} from "@/hooks/use-toast";
 
-function OwnersTableSkeleton() {
-    return (
-        <div className="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Owner</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Properties</TableHead>
-                        <TableHead>Sales</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {Array(5).fill(0).map((_, index) => (
-                        <TableRow key={index}>
-                            <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <Skeleton className="h-10 w-10 rounded-full" />
-                                    <div>
-                                        <Skeleton className="h-5 w-32 mb-1" />
-                                        <Skeleton className="h-4 w-40" />
-                                    </div>
-                                </div>
-                            </TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-12" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                            <TableCell className="text-right">
-                                <Skeleton className="h-8 w-20 ml-auto" />
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
-    );
-}
+
 
 type Filter = {
     status?: string
@@ -74,30 +36,39 @@ export default function OwnersClientPage() {
     const [filters, setFilters] = useState<Filter>({})
     const [tempFilters, setTempFilters] = useState<Filter>({})
     const [activeFilters, setActiveFilters] = useState<string[]>([])
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage, setItemsPerPage] = useState(10)
 
-    const {data, isLoading, isError, error} = useAllOwners({
+    // Create filters object for API call
+    const apiFilters = {
         search: debouncedSearchQuery,
         status: filters.status && filters.status !== "all" ? filters.status : undefined,
-        page: 1,
-        limit: 10
-    })
+        page: currentPage,
+        limit: itemsPerPage
+    }
+
+    const {data, isLoading, isError, error} = useAllOwners(apiFilters)
     const owners = data?.owners || []
+    const pagination = data?.pagination
 
-    // Apply filters to the owners list
-    const filteredOwners = owners.filter((owner) => {
-        // Search filter
-        const searchString = `${owner.firstName} ${owner.lastName} ${owner.email} ${owner.phoneNumber}`.toLowerCase()
-        const matchesSearch = searchQuery === "" || searchString.includes(searchQuery.toLowerCase())
+    useEffect(() => {
+        if (isError) {
+            toast({
+                variant: "destructive",
+                title: "Error loading owners",
+                description: error?.message || "An unknown error occurred.",
+            });
+        }
+    }, [isError, error]);
 
-        // Status filter
-        const matchesStatus =
-            !filters.status || filters.status === "" ||
-            (filters.status === "active" && owner.status === "ACTIVE") ||
-            (filters.status === "inactive" && owner.status === "INACTIVE") ||
-            (filters.status === "banned" && owner.status === "BANNED")
+    const goToPage = (page: number) => {
+        setCurrentPage(page)
+    }
 
-        return matchesSearch && matchesStatus
-    })
+    const handleItemsPerPageChange = (value: string) => {
+        setItemsPerPage(Number.parseInt(value))
+        setCurrentPage(1) // Reset to first page when items per page changes
+    }
 
     const applyFilters = () => {
         const newFilters = { ...tempFilters }
@@ -106,11 +77,16 @@ export default function OwnersClientPage() {
         if (newFilters.status === "all") newFilters.status = ""
 
         setFilters(newFilters)
+        setCurrentPage(1) // Reset to first page when filters are applied
 
         const newActiveFilters: string[] = []
 
         if (newFilters.status) {
-            newActiveFilters.push(`Status: ${newFilters.status === "active" ? "Active" : "On Leave"}`)
+            let statusLabel = newFilters.status
+            if (newFilters.status === "active") statusLabel = "Active"
+            else if (newFilters.status === "inactive") statusLabel = "Inactive"
+            else if (newFilters.status === "banned") statusLabel = "Banned"
+            newActiveFilters.push(`Status: ${statusLabel}`)
         }
 
         setActiveFilters(newActiveFilters)
@@ -130,6 +106,7 @@ export default function OwnersClientPage() {
             status: "all"
         })
         setActiveFilters([])
+        setCurrentPage(1) // Reset to first page when filters are cleared
     }
 
     const removeFilter = (filter: string) => {
@@ -146,6 +123,7 @@ export default function OwnersClientPage() {
 
         setFilters(updatedFilters)
         setTempFilters(updatedTempFilters)
+        setCurrentPage(1) // Reset to first page when a filter is removed
     }
 
     return (
@@ -169,7 +147,7 @@ export default function OwnersClientPage() {
                         <CardTitle className="text-sm font-medium">Total Owners</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{owners.length}</div>
+                        <div className="text-2xl font-bold">{pagination?.total || 0}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -177,8 +155,7 @@ export default function OwnersClientPage() {
                         <CardTitle className="text-sm font-medium">Active Owners</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div
-                            className="text-2xl font-bold">{owners.filter((owner) => owner.status === "ACTIVE").length}</div>
+                        <div className="text-2xl font-bold">{owners.filter((owner) => owner.status === "ACTIVE").length}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -186,9 +163,7 @@ export default function OwnersClientPage() {
                         <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div
-                            // className="text-2xl font-bold">{owners.reduce((sum, owner) => sum + owner.properties.length, 0)}</div>
-                        className="text-2xl font-bold">0</div>
+                        <div className="text-2xl font-bold">0</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -218,6 +193,7 @@ export default function OwnersClientPage() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
+                        h1.classname
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm">
@@ -241,7 +217,8 @@ export default function OwnersClientPage() {
                                             <SelectContent>
                                                 <SelectItem value="all">Any status</SelectItem>
                                                 <SelectItem value="active">Active</SelectItem>
-                                                <SelectItem value="on-leave">On Leave</SelectItem>
+                                                <SelectItem value="inactive">Inactive</SelectItem>
+                                                <SelectItem value="banned">Banned</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -279,6 +256,13 @@ export default function OwnersClientPage() {
                         </div>
                     )}
 
+                    {/* Results count */}
+                    <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm text-muted-foreground">
+                            {isLoading ? "Loading..." : `${pagination?.total || 0} owners found`}
+                        </p>
+                    </div>
+
                     {isLoading ? (
                         <OwnersTableSkeleton />
                     ) : (
@@ -293,8 +277,8 @@ export default function OwnersClientPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredOwners.length > 0 ? (
-                                        filteredOwners.map((owner) => (
+                                    {owners.length > 0 ? (
+                                        owners.map((owner) => (
                                             <TableRow key={owner.id}>
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
@@ -312,21 +296,20 @@ export default function OwnersClientPage() {
                                                             <div className="font-medium">
                                                                 {owner.firstName} {owner.lastName}
                                                             </div>
-                                                            <div
-                                                                className="text-sm text-muted-foreground">{owner.email}</div>
+                                                            <div className="text-sm text-muted-foreground">{owner.email}</div>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                {/*<TableCell>*/}
-                                                {/*  <Badge variant="outline">{owner.properties}</Badge>*/}
-                                                {/*</TableCell>*/}
                                                 <TableCell>
-                                                  <Badge
-                                                      variant={owner.status.toLowerCase() === "active" ? "default" : "secondary"}
-                                                      className={owner.status === "ACTIVE" ? "bg-green-500" : ""}
-                                                  >
-                                                    {owner.status}
-                                                  </Badge>
+                                                    <Badge variant="outline">0</Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge
+                                                        variant={owner.status.toLowerCase() === "active" ? "default" : "secondary"}
+                                                        className={owner.status === "ACTIVE" ? "bg-green-500" : ""}
+                                                    >
+                                                        {owner.status}
+                                                    </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <DropdownMenu>
@@ -342,8 +325,9 @@ export default function OwnersClientPage() {
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem>Edit Owner</DropdownMenuItem>
                                                             <DropdownMenuSeparator/>
-                                                            <DropdownMenuItem className="text-destructive">Deactivate
-                                                                Owner</DropdownMenuItem>
+                                                            <DropdownMenuItem className="text-destructive">
+                                                                Deactivate Owner
+                                                            </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>
@@ -351,13 +335,98 @@ export default function OwnersClientPage() {
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="h-24 text-center">
+                                            <TableCell colSpan={4} className="h-24 text-center">
                                                 No owners found matching your filters.
                                             </TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
                             </Table>
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {!isLoading && pagination && (
+                        <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={itemsPerPage.toString()}
+                                    onValueChange={handleItemsPerPageChange}
+                                >
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue placeholder="Per page" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5">5 per page</SelectItem>
+                                        <SelectItem value="10">10 per page</SelectItem>
+                                        <SelectItem value="20">20 per page</SelectItem>
+                                        <SelectItem value="50">50 per page</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <span className="text-sm text-muted-foreground">
+                                    Showing{" "}
+                                    {pagination.page === 1
+                                        ? 1
+                                        : (pagination.page - 1) * itemsPerPage + 1}
+                                    -
+                                    {Math.min(
+                                        pagination.page * itemsPerPage,
+                                        pagination.total
+                                    )}{" "}
+                                    of {pagination.total}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                {Array.from(
+                                    { length: Math.min(pagination.totalPages, 5) },
+                                    (_, i) => {
+                                        // Show pages around current page
+                                        let pageNum = i + 1;
+                                        if (pagination.totalPages > 5) {
+                                            if (currentPage > 3) {
+                                                pageNum = currentPage - 3 + i;
+                                            }
+                                            if (currentPage > pagination.totalPages - 2) {
+                                                pageNum = pagination.totalPages - 4 + i;
+                                            }
+                                        }
+
+                                        return (
+                                            <Button
+                                                key={pageNum}
+                                                variant={currentPage === pageNum ? "default" : "outline"}
+                                                size="icon"
+                                                onClick={() => goToPage(pageNum)}
+                                                className="w-8 h-8"
+                                            >
+                                                {pageNum}
+                                            </Button>
+                                        );
+                                    }
+                                )}
+
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={
+                                        currentPage === pagination.totalPages ||
+                                        pagination.totalPages === 0
+                                    }
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </CardContent>
