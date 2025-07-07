@@ -95,7 +95,7 @@ const Testimonials = () => {
                 </div>
                 <div className="relative flex justify-center max-w-[calc(100vw-8rem)] mx-auto">
                     <div
-                        className="overflow-hidden w-full [mask-image:linear-gradient(to_right,transparent_0,black_10%,black_90%,transparent_100%)] py-12"
+                        className="overflow-hidden w-full py-12"
                         ref={emblaRef}
                     >
                         <div

@@ -22,7 +22,8 @@ export const useCreateTransaction = () => {
         onError: (error: any) => {
             console.error("Failed to create transaction:", error?.response?.data || error.message);
             toast({
-                variant: "error",
+                variant: "destructive",
+                title: "Error creating transaction",
                 description:
                     error?.response?.data?.message || "An error occurred while adding the transaction.",
             });

@@ -10,8 +10,8 @@ const Hero = () => {
                 <div className="relative isolate">
                     <div className="overflow-hidden">
                         <div className="mx-auto max-w-7xl px-6 pb-32 pt-36 sm:pt-60 lg:px-8 lg:pt-32 ">
-                            <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center  ">
-                                <div className="relative w-full md:w-1/2 lg:w-1/2">
+                            <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center lg:justify-between">
+                                <div className="w-full lg:w-1/2">
                                     <h1 className="text-4xl table md:text-5xl lg:text-7xl text-balance font-display tracking-tight text-primary-0">
                                         Find Your Dream Property in Ghana.
                                     </h1>
@@ -38,10 +38,8 @@ const Hero = () => {
                                             </span>
                                         </Link>
                                     </div>
-
-
                                 </div>
-                                <img src="/hero.png" alt="" className="hidden md:block lg:block w-1/2 h-full absolute right-0 top-0"/>
+                                <img src="/hero.png" alt="" className="hidden lg:block lg:w-1/2 h-full object-cover"/>
                             </div>
                         </div>
                     </div>

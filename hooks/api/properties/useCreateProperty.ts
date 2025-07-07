@@ -58,7 +58,8 @@ export const useCreateProperty = () => {
         onError: (error: any) => {
             console.error("Property creation failed:", error?.response?.data || error.message);
             toast({
-                variant: "destructive", // Changed from "error" to "destructive" - standard shadcn/ui variant
+                variant: "destructive",
+                title: "Error creating property",
                 description:
                     error?.response?.data?.error ||
                     error?.response?.data?.message ||
